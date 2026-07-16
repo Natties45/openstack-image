@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>n8n — User Manual</title>
+<style>
+:root {
+  --sidebar-w: 260px;
+  --bg: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-code: #f0f0f0;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --accent: #ea580c;
+  --accent-hover: #c2410c;
+  --active-bg: #fff7ed;
+  --active-border: #ea580c;
+  --border: #e5e7eb;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body { font-family: var(--font); font-size: 16px; line-height: 1.7; color: var(--text); background: var(--bg); display: flex; min-height: 100vh; }
+.sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar-w); height: 100vh; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; z-index: 100; }
+.sidebar-brand { padding: 20px 20px 4px; display: flex; align-items: center; gap: 8px; }
+.app-icon { font-size: 22px; font-weight: bold; color: var(--accent); }
+.app-name { font-size: 18px; font-weight: 700; color: var(--text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search { margin: 16px 16px 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; font-family: var(--font); color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; }
+.search:focus { border-color: var(--accent); }
+.search::placeholder { color: var(--text-muted); }
+.nav-list { list-style: none; padding: 4px 0; flex: 1; }
+.nav-link { display: block; padding: 8px 20px 8px 17px; border-left: 3px solid transparent; color: var(--text); text-decoration: none; font-size: 14px; transition: background 0.12s, border-color 0.12s, color 0.12s; }
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-heading); }
+.nav-link.active { background: var(--active-bg); border-left-color: var(--active-border); color: var(--accent); font-weight: 600; }
+.sidebar-version { padding: 16px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); }
+.content { margin-left: var(--sidebar-w); flex: 1; max-width: 820px; padding: 48px 56px 80px; min-height: 100vh; }
+.content-header { margin-bottom: 36px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.content-header h1 { font-size: 28px; font-weight: 700; color: var(--text-heading); margin-bottom: 4px; }
+.subtitle { font-size: 16px; color: var(--text-muted); }
+.section { display: none; }
+.section.active { display: block; }
+.section h2 { font-size: 22px; font-weight: 700; color: var(--text-heading); margin-bottom: 8px; }
+.section h3 { font-size: 18px; font-weight: 600; color: var(--text-heading); margin-top: 28px; margin-bottom: 8px; }
+.section p { margin-bottom: 14px; }
+.section ul, .section ol { padding-left: 24px; margin-bottom: 14px; }
+.section li { margin-bottom: 6px; }
+code { font-family: var(--font-mono); font-size: 14px; background: var(--bg-code); padding: 2px 6px; border-radius: 4px; color: #1e293b; }
+pre { font-family: var(--font-mono); font-size: 14px; background: var(--bg-code); padding: 14px 18px; border-radius: var(--radius); overflow-x: auto; line-height: 1.55; margin-bottom: 16px; border: 1px solid var(--border); }
+pre code { background: none; padding: 0; border-radius: 0; }
+.step { display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start; }
+.step-num { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+.step-body { flex: 1; }
+.step-body p { margin-bottom: 6px; }
+.note, .warning { padding: 14px 18px; border-radius: var(--radius); margin-bottom: 16px; font-size: 14px; line-height: 1.6; }
+.note { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+.warning { background: #fef3c7; border-left: 4px solid #f59e0b; color: #92400e; }
+.config-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+.config-table th, .config-table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+.config-table th { background: var(--bg-sidebar); font-weight: 600; font-size: 13px; text-transform: uppercase; }
+.config-table td:first-child { font-family: var(--font-mono); color: var(--text-heading); white-space: nowrap; }
+.nav-buttons { display: flex; align-items: center; justify-content: space-between; margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); }
+.btn-prev, .btn-next { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 14px; font-family: var(--font); cursor: pointer; }
+.btn-prev:hover:not(:disabled), .btn-next:hover:not(:disabled) { background: #f3f4f6; border-color: var(--accent); color: var(--accent); }
+.btn-prev:disabled, .btn-next:disabled { opacity: 0.35; cursor: default; }
+.nav-indicator { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+.content-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+.content-footer h4 { font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.version-table { max-width: 400px; }
+.version-table td { padding: 6px 14px; border: none; font-size: 13px; }
+.version-table td:first-child { color: var(--text-muted); width: 120px; }
+
+@media print {
+  .sidebar, .nav-buttons, .search { display: none !important; }
+  .content { margin-left: 0; max-width: none; padding: 20px 0; }
+  .section { display: block !important; page-break-after: always; margin-bottom: 30px; }
+  .section:last-child { page-break-after: auto; }
+  .content-header { border-bottom: 1px solid #000; }
+  .content-footer { border-top: 1px solid #000; }
+  pre { border: 1px solid #ccc; background: #f5f5f5; }
+  body { color: #000; font-size: 13px; }
+}
+
+@media (max-width: 900px) {
+  .content { padding: 32px 24px; }
+}
+
+@media (max-width: 700px) {
+  :root { --sidebar-w: 220px; }
+  .content { padding: 24px 16px 60px; }
+  .content-header h1 { font-size: 22px; }
+  .section h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <span class="app-icon">N</span>
+    <span class="app-name">n8n</span>
+  </div>
+
+  <input type="search" class="search" placeholder="Search sections..." aria-label="Search sections">
+
+  <ul class="nav-list">
+    <li><a href="#overview" class="nav-link active">Overview</a></li>
+    <li><a href="#access" class="nav-link">Access</a></li>
+    <li><a href="#credentials" class="nav-link">Credentials</a></li>
+    <li><a href="#file-structure" class="nav-link">File Structure</a></li>
+    <li><a href="#https" class="nav-link">HTTPS</a></li>
+    <li><a href="#service-management" class="nav-link">Service Management</a></li>
+  </ul>
+
+  <div class="sidebar-version">
+    n8n 2.29.8 · Ubuntu 26.04 · Built 2026-07-10
+  </div>
+</nav>
+
+<main class="content">
+  <header class="content-header">
+    <h1>n8n — User Manual</h1>
+    <p class="subtitle">Workflow Automation image with n8n, PostgreSQL 16, and Nginx reverse proxy.</p>
+  </header>
+
+  <section id="overview" class="section active">
+    <h2>Overview</h2>
+    <p>This image runs n8n automatically on Ubuntu 26.04 using Docker Compose. On first boot, the environment creates secure database credentials and a unique encryption key, keeping your workflow secrets completely safe.</p>
+
+    <h3>Stack</h3>
+    <ul>
+      <li><strong>n8n</strong> — Workflow automation engine</li>
+      <li><strong>PostgreSQL 16</strong> — Stable database for robust performance and scaling</li>
+      <li><strong>Nginx</strong> — Reverse proxy to handle HTTPS termination for secure webhooks</li>
+    </ul>
+  </section>
+
+  <section id="access" class="section">
+    <h2>Access</h2>
+    <p>By default, n8n runs behind an Nginx reverse proxy on port 80. You will need to create your owner account on first access.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>Open <code>http://&lt;VM-IP&gt;/</code> in your browser.</p></div>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> The n8n service itself listens on port 5678 internally (localhost only). External traffic goes through Nginx on port 80. Do not open port 5678 in your security group.
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>Follow the on-screen instructions to create your n8n owner account.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>You can now start building workflows and connecting apps!</p></div>
+    </div>
+  </section>
+
+  <section id="credentials" class="section">
+    <h2>Credentials</h2>
+    <p>The system generated a random database password and N8N_ENCRYPTION_KEY on the first boot.</p>
+
+    <h3>View the credentials file</h3>
+    <pre><code>cat /root/n8n-credentials.txt</code></pre>
+
+    <div class="warning">
+      <strong>CRITICAL:</strong> Please backup the <code>N8N_ENCRYPTION_KEY</code> found in this file immediately. If you lose this key, you will permanently lose access to all saved app credentials inside n8n.
+    </div>
+  </section>
+
+  <section id="file-structure" class="section">
+    <h2>File Structure</h2>
+
+    <h3>Main directories</h3>
+    <table class="config-table">
+      <tr><th>Path</th><th>Purpose</th></tr>
+      <tr><td><code>/opt/n8n/</code></td><td>Main Docker Compose directory</td></tr>
+      <tr><td><code>/opt/n8n/certs/</code></td><td>Directory for SSL/TLS certificates</td></tr>
+      <tr><td><code>/opt/n8n/nginx/</code></td><td>Nginx configuration files</td></tr>
+    </table>
+
+    <h3>Runtime files</h3>
+    <table class="config-table">
+      <tr><th>File</th><th>Purpose</th></tr>
+      <tr><td><code>/opt/n8n/.env</code></td><td>Generated environment variables loaded by Docker Compose</td></tr>
+      <tr><td><code>/root/n8n-credentials.txt</code></td><td>Summary of generated credentials</td></tr>
+    </table>
+  </section>
+
+  <section id="https" class="section">
+    <h2>HTTPS Setup</h2>
+    <p>Webhooks from services like Stripe or Slack require a secure HTTPS connection. This image makes it easy to switch to HTTPS mode.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Point your domain (e.g. <code>n8n.yourdomain.com</code>) to this VM's IP.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Place your SSL certificate and private key in the certs directory:</p>
+        <pre><code>/opt/n8n/certs/fullchain.pem
+/opt/n8n/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Edit the <code>/opt/n8n/.env</code> file to reflect your domain:</p>
+        <pre><code>N8N_HOST=n8n.yourdomain.com
+N8N_PROTOCOL=https
+WEBHOOK_URL=https://n8n.yourdomain.com/
+N8N_SECURE_COOKIE=true</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>Activate HTTPS nginx config and restart:</p>
+        <pre><code>cd /opt/n8n
+cp nginx/n8n-https.conf nginx/n8n.conf
+docker compose down
+docker compose up -d</code></pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Tip:</strong> Use the <code>n8n-https-enable</code> helper to automate all steps above. It updates <code>.env</code>, copies the right nginx config, and restarts the stack for you.
+    </div>
+  </section>
+
+  <section id="helper-commands" class="section">
+    <h2>Helper Commands</h2>
+    <p>The image installs these helpers at <code>/usr/local/bin/</code> for daily management tasks. You can run them from any directory.</p>
+
+    <h3>General management</h3>
+    <table class="config-table">
+      <tr><th>Command</th><th>Purpose</th></tr>
+      <tr><td><code>n8n-status</code></td><td>Show container status</td></tr>
+      <tr><td><code>n8n-logs</code></td><td>Show recent logs (last 50 lines). Pass service name for specific logs: <code>n8n-logs nginx</code></td></tr>
+      <tr><td><code>n8n-restart</code></td><td>Restart the whole n8n stack</td></tr>
+      <tr><td><code>n8n-exec</code></td><td>Run n8n CLI commands inside the container. Example: <code>n8n-exec export:workflow --all</code></td></tr>
+    </table>
+
+    <h3>HTTPS management</h3>
+    <table class="config-table">
+      <tr><th>Command</th><th>Purpose</th></tr>
+      <tr><td><code>n8n-https-enable</code></td><td>Enable HTTPS — prompts for domain, updates <code>.env</code>, activates HTTPS nginx config, restarts stack. Requires certs at <code>/opt/n8n/certs/</code></td></tr>
+      <tr><td><code>n8n-https-disable</code></td><td>Disable HTTPS, revert to HTTP mode. Cert files are preserved</td></tr>
+      <tr><td><code>n8n-cert-status</code></td><td>Show SSL certificate status, expiry, and current mode (HTTP/HTTPS)</td></tr>
+    </table>
+
+    <h3>Upgrade management</h3>
+    <table class="config-table">
+      <tr><th>Command</th><th>Purpose</th></tr>
+      <tr><td><code>n8n-upgrade</code></td><td>Save current n8n image tag, pull newer image, restart</td></tr>
+      <tr><td><code>n8n-rollback</code></td><td>Restore the previous n8n image tag saved by <code>n8n-upgrade</code></td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Tip:</strong> All helpers operate from the <code>/opt/n8n</code> directory automatically, so you can run them from any working directory.
+    </div>
+  </section>
+
+  <section id="backup-restore" class="section">
+    <h2>Backup &amp; Restore</h2>
+
+    <div class="warning">
+      <strong>Warning:</strong> Do NOT run <code>docker compose down -v</code>. It will permanently delete PostgreSQL and n8n data volumes.
+    </div>
+
+    <h3>Back up the database</h3>
+    <pre><code>cd /opt/n8n
+source .env
+docker compose exec postgres pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" &gt; n8n-db-backup-$(date +%Y%m%d).sql</code></pre>
+
+    <h3>Back up config and files</h3>
+    <pre><code>cd /opt/n8n
+tar czf n8n-config-backup-$(date +%Y%m%d).tar.gz .env docker-compose.yml nginx/</code></pre>
+
+    <h3>Restore the database</h3>
+    <pre><code>cd /opt/n8n
+source .env
+cat n8n-db-backup-YYYYMMDD.sql | docker compose exec -T postgres psql -U "$POSTGRES_USER" "$POSTGRES_DB"</code></pre>
+
+    <h3>Restore config</h3>
+    <pre><code>cd /opt/n8n
+tar xzf n8n-config-backup-YYYYMMDD.tar.gz
+docker compose restart</code></pre>
+
+    <div class="note">
+      <strong>Note:</strong> Always back up your <code>N8N_ENCRYPTION_KEY</code> separately — see the <a href="#" class="goto-link" data-target="credentials">Credentials</a> section. Without this key, stored n8n credentials become undecryptable.
+    </div>
+  </section>
+
+  <section id="upgrade-rollback" class="section">
+    <h2>Upgrade &amp; Rollback</h2>
+    <p>The image provides two helper commands for safe upgrading and rollback.</p>
+
+    <h3>Upgrade</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Run the upgrade helper:</p>
+        <pre><code>n8n-upgrade</code></pre>
+        <p>This saves the current n8n image tag to <code>/opt/n8n/.previous-image</code>, pulls the newer tag from <code>docker-compose.yml</code>, and restarts n8n.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Verify the stack comes back cleanly:</p>
+        <pre><code>n8n-status</code></pre>
+      </div>
+    </div>
+
+    <h3>Rollback</h3>
+    <p>If the upgrade causes trouble, restore the previous version:</p>
+    <pre><code>n8n-rollback</code></pre>
+    <p>This reads the saved tag from <code>/opt/n8n/.previous-image</code>, updates <code>docker-compose.yml</code>, pulls the old image, and restarts.</p>
+
+    <div class="warning">
+      <strong>Warning:</strong> Rollback only works if <code>n8n-upgrade</code> was run previously. Always keep a separate database backup before upgrading — see <a href="#" class="goto-link" data-target="backup-restore">Backup &amp; Restore</a>.
+    </div>
+  </section>
+
+  <section id="service-management" class="section">
+    <h2>Service Management</h2>
+    <p>Use Docker Compose to manage your n8n server from the <code>/opt/n8n</code> directory.</p>
+
+    <h3>Check status</h3>
+    <pre><code>cd /opt/n8n
+docker compose ps</code></pre>
+
+    <h3>Check logs</h3>
+    <pre><code>cd /opt/n8n
+docker compose logs -f</code></pre>
+
+    <h3>Restart all services</h3>
+    <pre><code>cd /opt/n8n
+docker compose restart</code></pre>
+
+    <h3>Stop all services</h3>
+    <pre><code>cd /opt/n8n
+docker compose down</code></pre>
+
+    <h3>Start all services</h3>
+    <pre><code>cd /opt/n8n
+docker compose up -d</code></pre>
+
+    <div class="note">
+      <strong>Note:</strong> The nginx reverse proxy runs in all modes (HTTP and HTTPS). There are no Docker Compose profiles — mode switching is done via nginx config files and <code>.env</code> settings.
+    </div>
+  </section>
+
+  <div class="nav-buttons">
+    <button class="btn-prev" disabled>← Previous</button>
+    <span class="nav-indicator">1 / 9</span>
+    <button class="btn-next">Next →</button>
+  </div>
+
+  <footer class="content-footer">
+    <h4>Image Details</h4>
+    <table class="version-table">
+      <tr><td>Image</td><td>n8n Workflow Automation</td></tr>
+      <tr><td>OS</td><td>Ubuntu 26.04</td></tr>
+      <tr><td>Build date</td><td>2026-07-10</td></tr>
+      <tr><td>n8n</td><td>2.29.8</td></tr>
+      <tr><td>PostgreSQL</td><td>16</td></tr>
+      <tr><td>Nginx</td><td>stable</td></tr>
+    </table>
+  </footer>
+</main>
+
+<script>
+(function() {
+  'use strict';
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.nav-link');
+  var prevBtn = document.querySelector('.btn-prev');
+  var nextBtn = document.querySelector('.btn-next');
+  var indicator = document.querySelector('.nav-indicator');
+  var sectionIds = Array.from(sections).map(function(s) { return s.id; });
+  var currentIndex = 0;
+
+  function showSection(id) {
+    sections.forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.classList.add('active');
+
+    navLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+
+    currentIndex = sectionIds.indexOf(id);
+    if (currentIndex < 0) currentIndex = 0;
+    updateNavButtons();
+
+    if (history.pushState) {
+      history.pushState(null, '', '#' + id);
+    }
+  }
+
+  function updateNavButtons() {
+    prevBtn.disabled = (currentIndex === 0);
+    nextBtn.disabled = (currentIndex === sections.length - 1);
+    indicator.textContent = (currentIndex + 1) + ' / ' + sections.length;
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = this.getAttribute('href').substring(1);
+      showSection(id);
+      window.scrollTo(0, 0);
+    });
+  });
+
+  prevBtn.addEventListener('click', function() {
+    if (currentIndex > 0) {
+      showSection(sectionIds[currentIndex - 1]);
+      window.scrollTo(0, 0);
+    }
+  });
+
+  nextBtn.addEventListener('click', function() {
+    if (currentIndex < sections.length - 1) {
+      showSection(sectionIds[currentIndex + 1]);
+      window.scrollTo(0, 0);
+    }
+  });
+
+  if (window.location.hash) {
+    var hashId = window.location.hash.substring(1);
+    if (sectionIds.indexOf(hashId) !== -1) {
+      showSection(hashId);
+    }
+  }
+})();
+</script>
+</body>
+</html>

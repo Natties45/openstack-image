@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR=/opt/monitoring
+BACKUP_DIR=/var/backups/monitoring
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-update" >&2
+  exit 1
+fi
+
+echo "--- Monitoring Update & Rollback System ---"
+
+# 1. Pre-flight Check: Disk Space
+usage_str=$(df -h / | awk 'NR==2 {print $5}')
+usage_int=${usage_str%%%}
+if [ "$usage_int" -ge 90 ]; then
+  echo "Error: Disk space is critically low (${usage_int}% used). Please expand disk before updating." >&2
+  exit 1
+fi
+echo "[1/6] Disk space check passed (${usage_int}% used)."
+
+# 2. Stop and Snapshot Data
+echo "[2/6] Stopping services and backing up database volumes..."
+mkdir -p "$BACKUP_DIR"
+cd "$APP_DIR" || exit 1
+docker compose -f docker-compose.yml --env-file .env stop
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BAK_FILE="$BACKUP_DIR/monitoring_data_$TIMESTAMP.tar.gz"
+
+# We backup the docker volumes directory for this project
+VOL_DIR="/var/lib/docker/volumes"
+if [ -d "$VOL_DIR/monitoring_grafana_data" ] && [ -d "$VOL_DIR/monitoring_prometheus_data" ]; then
+  tar -czf "$BAK_FILE" -C "$VOL_DIR" monitoring_grafana_data monitoring_prometheus_data monitoring_alertmanager_data 2>/dev/null || true
+  echo "      Backup saved to $BAK_FILE"
+else
+  echo "      Notice: Volumes not found at standard path, skipping backup."
+fi
+
+# 3. Pull new images
+echo "[3/6] Pulling latest images..."
+if ! docker compose -f docker-compose.yml --env-file .env pull; then
+  echo "Error: Failed to pull new images. Reverting to previous state..." >&2
+  docker compose -f docker-compose.yml --env-file .env start
+  exit 1
+fi
+
+# 4. Start services
+echo "[4/6] Starting updated services..."
+docker compose -f docker-compose.yml --env-file .env up -d
+
+# 5. Health Check
+echo "[5/6] Waiting for services to initialize (30s)..."
+sleep 30
+HEALTH_OK=1
+
+echo "      Checking HTTP endpoints..."
+curl -fsS http://127.0.0.1/ >/dev/null || HEALTH_OK=0
+curl -fsS http://127.0.0.1:9090/-/healthy >/dev/null || HEALTH_OK=0
+curl -fsS http://127.0.0.1:9093/-/healthy >/dev/null || HEALTH_OK=0
+
+# 6. Evaluate and Rollback if needed
+if [ "$HEALTH_OK" -eq 1 ]; then
+  echo "[6/6] SUCCESS: Update completed and all services are healthy!"
+else
+  echo "[6/6] ERROR: Health check failed after update. Initiating auto-rollback!"
+  docker compose -f docker-compose.yml --env-file .env down
+  
+  if [ -f "$BAK_FILE" ]; then
+    echo "      Restoring data from $BAK_FILE..."
+    rm -rf "$VOL_DIR/monitoring_grafana_data/_data" "$VOL_DIR/monitoring_prometheus_data/_data" "$VOL_DIR/monitoring_alertmanager_data/_data"
+    tar -xzf "$BAK_FILE" -C "$VOL_DIR"
+  fi
+  
+  echo "      Restarting services with restored data..."
+  docker compose -f docker-compose.yml --env-file .env up -d
+  echo "      Rollback completed. The system has been restored to its previous state."
+  exit 1
+fi

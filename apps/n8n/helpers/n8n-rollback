@@ -1,0 +1,29 @@
+#!/bin/bash
+# n8n-rollback — restore previous n8n image tag from .previous-image
+set -e
+
+PREV_FILE="/opt/n8n/.previous-image"
+COMPOSE_FILE="/opt/n8n/docker-compose.yml"
+
+if [ ! -f "${PREV_FILE}" ]; then
+  echo "ERROR: No previous image saved (${PREV_FILE} not found)"
+  exit 1
+fi
+
+PREV_TAG=$(cat "${PREV_FILE}")
+if [ -z "${PREV_TAG}" ]; then
+  echo "ERROR: Previous image tag is empty"
+  exit 1
+fi
+
+echo "=> Restoring n8n to tag: ${PREV_TAG}"
+
+# Update compose file with previous tag
+sed -i "s|n8nio/n8n:[^\"']*|n8nio/n8n:${PREV_TAG}|" "${COMPOSE_FILE}"
+
+# Pull previous tag
+cd /opt/n8n && docker compose pull n8n
+
+# Restart
+docker compose up -d n8n
+echo "=> n8n rolled back to ${PREV_TAG}"

@@ -1,0 +1,21 @@
+#!/bin/bash
+# n8n-upgrade — save current image tag, pull new, restart
+set -e
+
+PREV_FILE="/opt/n8n/.previous-image"
+COMPOSE_FILE="/opt/n8n/docker-compose.yml"
+
+# Extract current image tag (match after "n8nio/n8n:" not first colon on line)
+CURRENT_TAG=$(grep -oP 'n8nio/n8n:\K[^\s"]+' "$COMPOSE_FILE" | head -1)
+echo "=> Current n8n image tag: ${CURRENT_TAG}"
+
+# Save previous tag for rollback
+echo "${CURRENT_TAG}" > "${PREV_FILE}"
+echo "=> Saved to ${PREV_FILE}"
+
+# Pull new image (uses whatever tag is in compose file)
+cd /opt/n8n && docker compose pull n8n
+
+# Restart n8n
+docker compose up -d n8n
+echo "=> n8n upgraded. Run 'n8n-rollback' to revert to ${CURRENT_TAG}"

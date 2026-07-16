@@ -1,0 +1,12 @@
+#!/bin/sh
+IP=$(ip -4 route get 1 2>/dev/null | sed -n 's/.*src \([0-9.]*\).*/\1/p' || hostname -I 2>/dev/null | awk '{print $1}')
+cat << EOF
+
+Grafana + Prometheus Monitoring System
+======================================
+Grafana URL:  http://${IP:-<VM-IP>}/
+Credentials:  sudo monitoring-info
+Check Status: sudo monitoring-status
+
+Quick Guide:  /root/README-grafana-prometheus-image.txt
+EOF

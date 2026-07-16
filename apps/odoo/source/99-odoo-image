@@ -1,0 +1,16 @@
+#!/bin/sh
+cat << 'EOF'
+
+Odoo 18 image
+-------------
+URL: http://<this-vm-ip>/
+Credentials: /root/odoo-credentials.txt
+App dir: /opt/odoo
+Certs: /opt/odoo/certs/fullchain.pem + /opt/odoo/certs/privkey.pem
+Backup: /usr/local/sbin/odoo-backup.sh
+
+Commands:
+  cd /opt/odoo && docker compose ps
+  cd /opt/odoo && docker compose logs -f
+
+EOF

@@ -1,0 +1,12 @@
+[Unit]
+Description=Grafana+Prometheus first boot bootstrap
+Wants=network-online.target docker.service
+After=network-online.target docker.service cloud-init.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/grafana-prometheus-bootstrap.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

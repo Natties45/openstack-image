@@ -1,0 +1,51 @@
+#!/bin/bash
+set -e
+
+COMPOSE_DIR="/opt/nextcloud"
+PREV_IMAGE_FILE="$COMPOSE_DIR/.previous-image"
+LOG_FILE="/var/log/nextcloud-rollback.log"
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOG_FILE"
+}
+
+cd "$COMPOSE_DIR"
+
+log "=== Rollback started ==="
+
+if [ ! -f "$PREV_IMAGE_FILE" ]; then
+    log "ERROR: No previous image record found at $PREV_IMAGE_FILE"
+    log "Cannot rollback — no version history"
+    exit 1
+fi
+
+PREV_IMAGE=$(cat "$PREV_IMAGE_FILE")
+log "Previous image: $PREV_IMAGE"
+
+log "Enabling maintenance mode"
+docker compose exec -T -u www-data nextcloud php occ maintenance:mode --on
+
+log "Pulling previous image"
+docker pull "$PREV_IMAGE" 2>/dev/null || true
+
+log "Updating compose to use previous image"
+sed -i "s|^    image: nextcloud:.*|    image: $PREV_IMAGE|" "$COMPOSE_DIR/docker-compose.yml"
+
+log "Restarting with previous image"
+docker compose up -d
+docker compose --profile http restart nginx
+
+log "Waiting for ready..."
+delays=(2 5 10 15 30 30 30 30 30 30 30 30 30 30 30)
+for delay in "${delays[@]}"; do
+    if docker compose exec -T -u www-data nextcloud php occ status 2>/dev/null | grep -q "installed: true"; then
+        log "Nextcloud ready"
+        break
+    fi
+    sleep "$delay"
+done
+
+log "Disabling maintenance mode"
+docker compose exec -T -u www-data nextcloud php occ maintenance:mode --off
+
+log "=== Rollback completed ==="

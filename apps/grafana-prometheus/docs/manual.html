@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grafana+Prometheus — คู่มือการใช้งาน</title>
+<style>
+/* ============================================================
+   Manual Template — Clean Minimal
+   ============================================================ */
+
+:root {
+  --sidebar-w: 260px;
+  --bg: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-code: #f0f0f0;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --active-bg: #eff6ff;
+  --active-border: #2563eb;
+  --border: #e5e7eb;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 20px 20px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-icon { font-size: 22px; }
+
+.app-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search {
+  margin: 16px 16px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.search::placeholder { color: var(--text-muted); }
+
+.nav-list {
+  list-style: none;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-link {
+  display: block;
+  padding: 8px 20px 8px 17px;
+  border-left: 3px solid transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-heading); }
+
+.nav-link.active {
+  background: var(--active-bg);
+  border-left-color: var(--active-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-version {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 820px;
+  padding: 48px 56px 80px;
+  min-height: 100vh;
+}
+
+.content-header {
+  margin-bottom: 36px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+/* ===== SECTIONS ===== */
+.section { display: none; }
+
+.section.active { display: block; }
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.section p {
+  margin-bottom: 14px;
+}
+
+.section ul, .section ol {
+  padding-left: 24px;
+  margin-bottom: 14px;
+}
+
+.section li { margin-bottom: 6px; }
+
+.section li > ul, .section li > ol { margin-top: 4px; margin-bottom: 0; }
+
+/* ===== CODE ===== */
+code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1e293b;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ===== STEP NUMBERS ===== */
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.step-body { flex: 1; }
+
+.step-body p { margin-bottom: 6px; }
+
+/* ===== NOTE / WARNING BOXES ===== */
+.note, .warning {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+}
+
+.warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.note strong, .warning strong { font-weight: 600; }
+
+/* ===== CONFIG TABLE ===== */
+.config-table, .version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.config-table th, .config-table td,
+.version-table th, .version-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.config-table th {
+  background: var(--bg-sidebar);
+  font-weight: 600;
+  color: var(--text-heading);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.config-table td:first-child,
+.version-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.config-table tr:hover { background: #fafafa; }
+
+/* ===== NAV BUTTONS ===== */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-prev, .btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.btn-prev:hover:not(:disabled),
+.btn-next:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-prev:disabled, .btn-next:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-indicator {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ===== FOOTER ===== */
+.content-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.content-footer h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-table { max-width: 400px; }
+
+.version-table td { padding: 6px 14px; border: none; font-size: 13px; }
+
+.version-table td:first-child { color: var(--text-muted); width: 120px; }
+
+/* ===== PRINT ===== */
+@media print {
+  .sidebar, .nav-buttons, .search { display: none !important; }
+
+  .content {
+    margin-left: 0;
+    max-width: none;
+    padding: 20px 0;
+  }
+
+  .section {
+    display: block !important;
+    page-break-after: always;
+    margin-bottom: 30px;
+  }
+
+  .section:last-child { page-break-after: auto; }
+
+  .content-header { border-bottom: 1px solid #000; }
+  .content-footer { border-top: 1px solid #000; }
+
+  pre {
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+  }
+
+  body { color: #000; font-size: 13px; }
+}
+
+@media (max-width: 900px) {
+  .content { padding: 32px 24px; }
+}
+
+@media (max-width: 700px) {
+  :root { --sidebar-w: 220px; }
+  .content { padding: 24px 16px 60px; }
+  .content-header h1 { font-size: 22px; }
+  .section h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====== SIDEBAR ====== -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <span class="app-icon">📊</span>
+    <span class="app-name">Grafana+Prometheus</span>
+  </div>
+
+  <input type="search" class="search" placeholder="ค้นหาหัวข้อ..." aria-label="ค้นหาหัวข้อ">
+
+  <ul class="nav-list">
+    <li><a href="#overview" class="nav-link active">ภาพรวม</a></li>
+    <li><a href="#access" class="nav-link">การเข้าใช้งาน</a></li>
+    <li><a href="#credentials" class="nav-link">รหัสผ่าน</a></li>
+    <li><a href="#files" class="nav-link">โครงสร้างไฟล์</a></li>
+    <li><a href="#commands" class="nav-link">คำสั่งพื้นฐาน</a></li>
+    <li><a href="#https" class="nav-link">การเปิด HTTPS</a></li>
+    <li><a href="#backup" class="nav-link">Backup & Restore</a></li>
+    <li><a href="#upgrade" class="nav-link">การอัปเกรด</a></li>
+    <li><a href="#targets" class="nav-link">การเพิ่ม Target</a></li>
+    <li><a href="#alerts" class="nav-link">การตั้งค่า Alert</a></li>
+    <li><a href="#scripts" class="nav-link">คำสั่ง Helper</a></li>
+    <li><a href="#dashboards" class="nav-link">Dashboard</a></li>
+  </ul>
+
+  <div class="sidebar-version">
+    Grafana+Prometheus &middot; v1
+  </div>
+</nav>
+
+<!-- ====== CONTENT ====== -->
+<main class="content">
+
+  <header class="content-header">
+    <h1>Grafana+Prometheus — คู่มือการใช้งาน</h1>
+    <p class="subtitle">ระบบ Monitoring สำเร็จรูป — ตรวจสอบสถานะ VM, เว็บไซต์, และบริการต่างๆ ผ่าน Grafana Dashboard</p>
+  </header>
+
+  <!-- ===== CORE: overview ===== -->
+  <section id="overview" class="section active">
+    <h2>ภาพรวม</h2>
+    <p>VM เครื่องนี้มาพร้อมระบบ Monitoring แบบครบวงจร ทำงานอัตโนมัติตั้งแต่เปิดเครื่องครั้งแรก ประกอบด้วย:</p>
+
+    <table class="config-table">
+      <tr><th>Component</th><th>บทบาท</th></tr>
+      <tr><td>Grafana</td><td>หน้าจอ Dashboard — แสดงกราฟ, สถานะ, และ alert</td></tr>
+      <tr><td>Prometheus</td><td>เก็บบันทึก metrics — ดึงข้อมูลจาก target ต่างๆ ตามเวลา</td></tr>
+      <tr><td>Alertmanager</td><td>ส่งแจ้งเตือน — เมื่อเกิดเหตุการณ์ตามเงื่อนไขที่ตั้งไว้</td></tr>
+      <tr><td>node_exporter</td><td>เก็บ metrics ของ VM เครื่องนี้ — CPU, RAM, disk, network</td></tr>
+      <tr><td>blackbox_exporter</td><td>ตรวจสอบ HTTP, HTTPS, TCP, ping จากภายนอก</td></tr>
+      <tr><td>Nginx</td><td>Reverse proxy — รับ request จาก browser ส่งต่อให้ Grafana</td></tr>
+      <tr><td>cAdvisor</td><td>ตัวเลือกเสริม — เก็บ metrics ของ Docker containers</td></tr>
+    </table>
+
+    <h3>การทำงาน</h3>
+    <ul>
+      <li>เปิด VM → ระบบสร้าง password อัตโนมัติ → start ทุก service → พร้อมใช้งานทันที</li>
+      <li>VM เครื่องนี้ monitor ตัวเองผ่าน <code>node_exporter</code> อัตโนมัติ</li>
+      <li>เพิ่มเครื่องอื่น, เว็บไซต์, หรือพอร์ตที่ต้องการ monitor ได้ด้วยคำสั่ง <code>monitoring-add-*</code></li>
+      <li>ตั้งค่า alert แจ้งเตือนผ่าน email, LINE, Slack ฯลฯ ได้</li>
+      <li>Prometheus เก็บ metrics ย้อนหลัง 30 วัน (ปรับได้)</li>
+    </ul>
+  </section>
+  <!-- ===== /CORE: overview ===== -->
+
+  <!-- ===== CORE: access ===== -->
+  <section id="access" class="section">
+    <h2>การเข้าใช้งาน</h2>
+
+    <h3>URL</h3>
+    <table class="config-table">
+      <tr><th>Service</th><th>URL</th><th>หมายเหตุ</th></tr>
+      <tr><td>Grafana Dashboard</td><td><code>http://&lt;VM-IP&gt;/</code></td><td>เข้าใช้งานหลัก — ดูกราฟและ dashboard</td></tr>
+      <tr><td>Prometheus</td><td><code>http://127.0.0.1:9090</code></td><td>ใช้ภายใน VM เท่านั้น — สำหรับ debug</td></tr>
+      <tr><td>Alertmanager</td><td><code>http://127.0.0.1:9093</code></td><td>ใช้ภายใน VM เท่านั้น — สำหรับ debug</td></tr>
+    </table>
+
+    <h3>Security Group (Firewall)</h3>
+    <p>เปิด port ต่อไปนี้ที่ OpenStack Security Group:</p>
+    <table class="config-table">
+      <tr><th>Port</th><th>Protocol</th><th>CIDR</th><th>วัตถุประสงค์</th></tr>
+      <tr><td>80</td><td>TCP</td><td>0.0.0.0/0</td><td>เข้า Grafana Dashboard</td></tr>
+      <tr><td>22</td><td>TCP</td><td>admin IP</td><td>SSH เข้า VM</td></tr>
+      <tr><td>9100</td><td>TCP</td><td>monitoring VM IP</td><td>target VMs — ให้ node_exporter ถูก monitor ได้</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>Port 9090 และ 9093 ไม่ต้องเปิด</strong> — Prometheus และ Alertmanager ใช้ภายใน VM เท่านั้น
+    </div>
+
+    <h3>เข้าใช้งานครั้งแรก</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>SSH เข้า VM แล้วดู password: <code>sudo monitoring-info</code></p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>เปิด browser ไปที่ <code>http://&lt;VM-IP&gt;/</code></p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>Login ด้วย username: <code>admin</code> และ password จากขั้นตอนที่ 1</p></div>
+    </div>
+  </section>
+  <!-- ===== /CORE: access ===== -->
+
+  <!-- ===== CORE: credentials ===== -->
+  <section id="credentials" class="section">
+    <h2>รหัสผ่าน & Credentials</h2>
+
+    <h3>ดูรหัสผ่าน</h3>
+    <p>รหัสผ่านถูกสุ่มตอนเปิด VM ครั้งแรก — ใช้คำสั่งนี้ดู:</p>
+    <pre><code>sudo monitoring-info</code></pre>
+    <p>แสดงผล:</p>
+    <pre><code>Grafana URL:
+  http://10.0.0.5/
+
+Login:
+  Username: admin
+  Password: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code></pre>
+
+    <h3>รีเซ็ตรหัสผ่าน</h3>
+    <pre><code>sudo monitoring-reset-grafana-password</code></pre>
+    <p>คำสั่งนี้จะ:</p>
+    <ul>
+      <li>สุ่ม password ใหม่</li>
+      <li>อัปเดต password ใน Grafana โดยตรง</li>
+      <li>อัปเดตไฟล์ <code>/opt/monitoring/.env</code></li>
+      <li>เขียนไฟล์ <code>/root/README-grafana-prometheus-image.txt</code> ใหม่</li>
+    </ul>
+
+    <div class="warning">
+      <strong>คำเตือน:</strong> ไฟล์ <code>/opt/monitoring/.env</code> และ <code>/root/README-grafana-prometheus-image.txt</code> มี password — ตั้ง permission <code>600</code> ห้ามให้คนอื่นอ่าน
+    </div>
+
+    <h3>ตำแหน่งไฟล์ที่เก็บ password</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>เนื้อหา</th><th>Permission</th></tr>
+      <tr><td><code>/opt/monitoring/.env</code></td><td>GRAFANA_ADMIN_PASSWORD, GRAFANA_SECRET_KEY</td><td>600 (root เท่านั้น)</td></tr>
+      <tr><td><code>/root/README-grafana-prometheus-image.txt</code></td><td>Password + ผังไฟล์ (human-readable)</td><td>600 (root เท่านั้น)</td></tr>
+    </table>
+  </section>
+  <!-- ===== /CORE: credentials ===== -->
+
+  <!-- ===== CORE: files ===== -->
+  <section id="files" class="section">
+    <h2>โครงสร้างไฟล์ & Config</h2>
+
+    <h3>Directory หลัก</h3>
+    <table class="config-table">
+      <tr><th>Path</th><th>หน้าที่</th></tr>
+      <tr><td><code>/opt/monitoring/</code></td><td>โฟลเดอร์หลัก — ทุกอย่างของระบบ monitoring อยู่ที่นี่</td></tr>
+      <tr><td><code>/opt/monitoring/prometheus/</code></td><td>Config + rules + targets ของ Prometheus</td></tr>
+      <tr><td><code>/opt/monitoring/alertmanager/</code></td><td>Config ของ Alertmanager</td></tr>
+      <tr><td><code>/opt/monitoring/grafana/</code></td><td>Provisioning + dashboards ของ Grafana</td></tr>
+      <tr><td><code>/opt/monitoring/nginx/</code></td><td>Config ของ Nginx reverse proxy</td></tr>
+      <tr><td><code>/opt/monitoring/blackbox/</code></td><td>Config ของ Blackbox Exporter</td></tr>
+    </table>
+
+    <h3>Config ที่แก้ไขได้</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>ตั้งค่าอะไร</th></tr>
+      <tr><td><code>docker-compose.yml</code></td><td>Docker containers — port, volume, restart policy</td></tr>
+      <tr><td><code>nginx/default.conf</code></td><td>Nginx reverse proxy — ใช้ตอนเพิ่ม TLS/HTTPS หรือเปลี่ยน route</td></tr>
+      <tr><td><code>prometheus/prometheus.yml</code></td><td>Prometheus — scrape interval, retention time, global settings</td></tr>
+      <tr><td><code>prometheus/rules/alerts.yml</code></td><td>เงื่อนไข alert — threshold ต่างๆ เช่น CPU &gt; 90%</td></tr>
+      <tr><td><code>alertmanager/alertmanager.yml</code></td><td>การส่ง alert — email, LINE, Slack, webhook</td></tr>
+      <tr><td><code>blackbox/blackbox.yml</code></td><td>Blackbox Exporter — วิธี probe HTTP, TCP, ICMP</td></tr>
+      <tr><td><code>grafana/provisioning/</code></td><td>Grafana auto-provisioning — datasource และ dashboard provider</td></tr>
+    </table>
+
+    <h3>Target Files — จัดการด้วย helper command ปกติไม่ต้องแก้เอง</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>เนื้อหา</th></tr>
+      <tr><td><code>prometheus/targets/nodes.yml</code></td><td>รายชื่อเครื่องที่ monitor ผ่าน node_exporter</td></tr>
+      <tr><td><code>prometheus/targets/http.yml</code></td><td>รายชื่อ URL ที่ monitor ผ่าน HTTP/HTTPS</td></tr>
+      <tr><td><code>prometheus/targets/tcp.yml</code></td><td>รายชื่อ TCP port ที่ monitor</td></tr>
+      <tr><td><code>prometheus/targets/ping.yml</code></td><td>รายชื่อ IP ที่ monitor ผ่าน ping</td></tr>
+      <tr><td><code>prometheus/targets/cadvisor.yml</code></td><td>รายชื่อ container metrics (optional — ต้องเปิด profile cadvisor)</td></tr>
+    </table>
+
+    <h3>Data Volumes — ห้ามลบ</h3>
+    <table class="config-table">
+      <tr><th>Volume</th><th>เก็บข้อมูลอะไร</th></tr>
+      <tr><td><code>grafana_data</code></td><td>Grafana settings, dashboards, users</td></tr>
+      <tr><td><code>prometheus_data</code></td><td>Metrics ย้อนหลังทั้งหมด</td></tr>
+      <tr><td><code>alertmanager_data</code></td><td>Alert state และ silences</td></tr>
+    </table>
+
+    <h3>Runtime — ระบบสร้างและจัดการให้ ห้ามแก้ไข</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>หน้าที่</th></tr>
+      <tr><td><code>/opt/monitoring/.env</code></td><td>เก็บ password และ environment variables</td></tr>
+      <tr><td><code>/root/README-grafana-prometheus-image.txt</code></td><td>ข้อมูลสรุป — password, URLs, ผังไฟล์</td></tr>
+      <tr><td><code>/var/lib/grafana-prometheus-firstboot.done</code></td><td>Marker — บอกว่าระบบ boot ครั้งแรกแล้ว</td></tr>
+    </table>
+
+    <h3>Logs</h3>
+    <pre><code>docker logs grafana
+docker logs prometheus
+docker logs alertmanager
+docker logs node-exporter
+docker logs blackbox-exporter
+docker logs monitoring-nginx</code></pre>
+  </section>
+  <!-- ===== /CORE: files ===== -->
+
+  <!-- ===== CORE: commands ===== -->
+  <section id="commands" class="section">
+    <h2>คำสั่งพื้นฐาน</h2>
+
+    <h3>ตรวจสอบสถานะ</h3>
+    <pre><code>cd /opt/monitoring
+docker compose ps</code></pre>
+
+    <h3>ดู Log</h3>
+    <pre><code>cd /opt/monitoring
+docker compose logs -f</code></pre>
+
+    <h3>Restart ทั้งหมด</h3>
+    <pre><code>cd /opt/monitoring
+docker compose restart</code></pre>
+
+    <h3>Restart เฉพาะ service</h3>
+    <pre><code>cd /opt/monitoring
+docker compose restart grafana
+docker compose restart prometheus
+docker compose restart nginx</code></pre>
+
+    <div class="note">
+      <strong>หลังแก้ config:</strong> หลังจากแก้ไขไฟล์ config ใดๆ → restart service ที่เกี่ยวข้อง แล้ว reload Prometheus:
+      <pre style="margin-top:8px;margin-bottom:0;"><code>cd /opt/monitoring
+docker compose restart prometheus   # หรือ service ที่แก้
+sudo monitoring-reload              # reload Prometheus config โดยไม่ restart</code></pre>
+    </div>
+
+    <h3>Stop ทั้งหมด</h3>
+    <pre><code>cd /opt/monitoring
+docker compose down</code></pre>
+
+    <h3>Start ใหม่</h3>
+    <pre><code>cd /opt/monitoring
+docker compose up -d</code></pre>
+
+    <h3>ตรวจสอบสถานะระบบ</h3>
+    <pre><code>sudo monitoring-status</code></pre>
+    <p>คำสั่งนี้แสดง:</p>
+    <ul>
+      <li>สถานะ systemd service</li>
+      <li>สถานะ Docker containers</li>
+      <li>Health check ของ Grafana, Prometheus, Alertmanager</li>
+      <li>สรุป Prometheus targets (up/down แยกตาม health)</li>
+      <li>พื้นที่ disk</li>
+    </ul>
+  </section>
+  <!-- ===== /CORE: commands ===== -->
+
+  <!-- ===== CORE: https ===== -->
+  <section id="https" class="section">
+    <h2>การเปิด HTTPS</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>ชี้ DNS ไปที่ VM floating IP</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>แก้ไข Nginx config ให้รองรับ SSL:</p>
+        <pre><code>sudo nano /opt/monitoring/nginx/default.conf</code></pre>
+        <p>เปลี่ยนจาก listen 80 เป็น listen 443 ssl พร้อมเพิ่ม path certificate</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>วาง certificate files ใน <code>/opt/monitoring/</code> หรือ path ที่กำหนดใน Nginx config</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>Restart Nginx:</p>
+        <pre><code>cd /opt/monitoring
+docker compose restart nginx</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p>อัปเดต Grafana root URL ให้เป็น HTTPS:</p>
+        <pre><code>sudo nano /opt/monitoring/.env</code></pre>
+        <p>แก้ <code>GRAFANA_ROOT_URL</code> เป็น <code>https://yourdomain.com/</code></p>
+        <pre><code>cd /opt/monitoring
+docker compose restart grafana</code></pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>แนะนำ:</strong> ใช้ <strong>Certbot</strong> หรือ <strong>Let's Encrypt</strong> สำหรับ certificate ฟรีที่ต่ออายุอัตโนมัติ
+    </div>
+  </section>
+  <!-- ===== /CORE: https ===== -->
+
+  <!-- ===== CORE: backup ===== -->
+  <section id="backup" class="section">
+    <h2>Backup & Restore</h2>
+
+    <h3>สิ่งที่ต้อง Backup</h3>
+    <table class="config-table">
+      <tr><th>ข้อมูล</th><th>Volume</th><th>วิธี Backup</th></tr>
+      <tr><td>Grafana — dashboards, users, settings</td><td><code>grafana_data</code></td><td>Copy volume หรือ export dashboard JSON</td></tr>
+      <tr><td>Prometheus — metrics ย้อนหลัง</td><td><code>prometheus_data</code></td><td>Copy volume (ข้อมูลใหญ่ — ใช้ rsync)</td></tr>
+      <tr><td>Alertmanager — alert state, silences</td><td><code>alertmanager_data</code></td><td>Copy volume</td></tr>
+      <tr><td>Config files</td><td><code>/opt/monitoring/</code></td><td>tar ไฟล์ config ทั้งหมด</td></tr>
+    </table>
+
+    <h3>Backup Volumes</h3>
+    <pre><code>cd /opt/monitoring
+docker compose down
+
+# Backup volumes
+docker run --rm -v grafana_data:/data -v /backup:/backup alpine tar czf /backup/grafana-data.tar.gz -C /data .
+docker run --rm -v prometheus_data:/data -v /backup:/backup alpine tar czf /backup/prometheus-data.tar.gz -C /data .
+docker run --rm -v alertmanager_data:/data -v /backup:/backup alpine tar czf /backup/alertmanager-data.tar.gz -C /data .
+
+docker compose up -d</code></pre>
+
+    <h3>Backup Config</h3>
+    <pre><code>sudo tar czf /backup/monitoring-config.tar.gz -C /opt monitoring</code></pre>
+
+    <h3>Restore</h3>
+    <pre><code>cd /opt/monitoring
+docker compose down
+
+# Restore volumes
+docker run --rm -v grafana_data:/data -v /backup:/backup alpine tar xzf /backup/grafana-data.tar.gz -C /data
+docker run --rm -v prometheus_data:/data -v /backup:/backup alpine tar xzf /backup/prometheus-data.tar.gz -C /data
+docker run --rm -v alertmanager_data:/data -v /backup:/backup alpine tar xzf /backup/alertmanager-data.tar.gz -C /data
+
+# Restore config
+sudo tar xzf /backup/monitoring-config.tar.gz -C /
+
+docker compose up -d</code></pre>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> Prometheus data volume อาจมีขนาดใหญ่ (ขึ้นกับจำนวน target และ retention period) — ตรวจสอบพื้นที่ disk ก่อน backup เสมอ
+    </div>
+  </section>
+  <!-- ===== /CORE: backup ===== -->
+
+  <!-- ===== CORE: upgrade ===== -->
+  <section id="upgrade" class="section">
+    <h2>การอัปเกรด</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Backup ก่อนอัปเกรดเสมอ — ดูหัวข้อ <a href="#" class="goto-link" data-target="backup">Backup &amp; Restore</a></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Pull Docker images ใหม่:</p>
+        <pre><code>cd /opt/monitoring
+docker compose pull</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Restart services ด้วย image ใหม่:</p>
+        <pre><code>cd /opt/monitoring
+docker compose up -d</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>ตรวจสอบสถานะ:</p>
+        <pre><code>sudo monitoring-status</code></pre>
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>ข้อควรระวัง:</strong>
+      <ul style="margin-top:6px;">
+        <li>Grafana major version upgrade อาจมี breaking changes — อ่าน release notes ก่อน</li>
+        <li>Prometheus TSDB format อาจเปลี่ยนระหว่าง major version — เช็ค compatibility</li>
+        <li>ถ้าใช้ <code>latest</code> tag → pull แล้ว restart เลย</li>
+        <li>ถ้าเปลี่ยน retention settings ใน <code>prometheus.yml</code> → ต้อง restart Prometheus</li>
+      </ul>
+    </div>
+  </section>
+  <!-- ===== /CORE: upgrade ===== -->
+
+  <!-- ===== APP_SPECIFIC: targets ===== -->
+  <section id="targets" class="section">
+    <h2>การเพิ่ม Target สำหรับ Monitoring</h2>
+    <p>ใช้คำสั่ง <code>monitoring-add-*</code> เพิ่ม target ได้ 4 ประเภท — คำสั่งจะเติม target ลงไฟล์ที่ถูกต้องและ reload Prometheus ให้อัตโนมัติ</p>
+
+    <h3>เพิ่ม HTTP/HTTPS Target</h3>
+    <p>ตรวจสอบว่าเว็บไซต์ตอบ HTTP 2xx หรือไม่</p>
+    <pre><code>sudo monitoring-add-http https://example.com website-prod</code></pre>
+    <p><strong>เงื่อนไข:</strong> URL ต้องขึ้นต้นด้วย <code>http://</code> หรือ <code>https://</code></p>
+    <p>target จะถูกเพิ่มใน <code>/opt/monitoring/prometheus/targets/http.yml</code></p>
+
+    <h3>เพิ่ม Node Target (Linux VM)</h3>
+    <p>ตรวจสอบ metrics ของเครื่องอื่นผ่าน node_exporter (ต้องติดตั้ง node_exporter ที่เครื่องปลายทางก่อน)</p>
+    <pre><code>sudo monitoring-add-node 10.0.0.12:9100 web-01</code></pre>
+    <p><strong>เงื่อนไข:</strong> เครื่องปลายทางต้องเปิด port 9100 และติดตั้ง node_exporter</p>
+    <p>target จะถูกเพิ่มใน <code>/opt/monitoring/prometheus/targets/nodes.yml</code></p>
+
+    <h3>เพิ่ม TCP Port Target</h3>
+    <p>ตรวจสอบว่า TCP port เปิดอยู่หรือไม่</p>
+    <pre><code>sudo monitoring-add-tcp 10.0.0.20:5432 postgres-01</code></pre>
+    <p>target จะถูกเพิ่มใน <code>/opt/monitoring/prometheus/targets/tcp.yml</code></p>
+
+    <h3>เพิ่ม Ping Target</h3>
+    <p>ตรวจสอบว่า IP ตอบ ICMP ping หรือไม่</p>
+    <pre><code>sudo monitoring-add-ping 10.0.0.30 router-01</code></pre>
+    <p>target จะถูกเพิ่มใน <code>/opt/monitoring/prometheus/targets/ping.yml</code></p>
+
+    <h3>ดู Targets ปัจจุบัน</h3>
+    <pre><code>sudo monitoring-list-targets</code></pre>
+
+    <h3>ลบ Target</h3>
+    <p>แก้ไขไฟล์ target โดยตรง:</p>
+    <pre><code>sudo nano /opt/monitoring/prometheus/targets/http.yml</code></pre>
+    <p>แล้ว reload:</p>
+    <pre><code>sudo monitoring-reload</code></pre>
+
+    <div class="note">
+      <strong>การเปิด cAdvisor (Docker container metrics):</strong> cAdvisor ใช้ Docker Compose profile — ต้องเปิดแยก:
+      <pre style="margin-top:8px;margin-bottom:0;"><code>cd /opt/monitoring
+docker compose --profile cadvisor up -d</code></pre>
+      แล้วเพิ่ม target ด้วย <code>sudo monitoring-add-node &lt;host&gt;:8080 cadvisor</code> (ต้องมี cAdvisor ที่ target)
+    </div>
+  </section>
+  <!-- ===== /APP_SPECIFIC: targets ===== -->
+
+  <!-- ===== APP_SPECIFIC: alerts ===== -->
+  <section id="alerts" class="section">
+    <h2>การตั้งค่า Alert</h2>
+
+    <h3>Alert Rules — เงื่อนไขการแจ้งเตือน</h3>
+    <p>แก้ไขไฟล์ Prometheus alert rules:</p>
+    <pre><code>sudo nano /opt/monitoring/prometheus/rules/alerts.yml</code></pre>
+
+    <p>ตัวอย่าง alert rule — แจ้งเมื่อ CPU สูงเกิน 90% นาน 5 นาที:</p>
+    <pre><code>groups:
+  - name: node_alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU usage > 90% on {{ $labels.instance }}"</code></pre>
+
+    <p>หลังแก้ไข:</p>
+    <pre><code>sudo monitoring-reload</code></pre>
+
+    <h3>Alertmanager — ช่องทางการส่ง Alert</h3>
+    <p>แก้ไขไฟล์ Alertmanager config:</p>
+    <pre><code>sudo nano /opt/monitoring/alertmanager/alertmanager.yml</code></pre>
+
+    <p>ตัวอย่าง — ส่ง alert ผ่าน email และ Slack:</p>
+    <pre><code>global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alert@example.com'
+  smtp_auth_username: 'alert@example.com'
+  smtp_auth_password: 'app-password'
+
+route:
+  receiver: 'default'
+
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'admin@example.com'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/...'
+        channel: '#alerts'</code></pre>
+
+    <p>หลังแก้ไข:</p>
+    <pre><code>cd /opt/monitoring
+docker compose restart alertmanager</code></pre>
+
+    <div class="note">
+      <strong>Alertmanager รองรับ receivers:</strong> email, Slack, LINE (ผ่าน LINE Notify), PagerDuty, OpsGenie, Webhook, WeChat, Telegram และอื่นๆ
+    </div>
+
+    <h3>ดูสถานะ Alert</h3>
+    <ul>
+      <li><strong>Prometheus Alerts:</strong> เปิด Grafana → ไปที่เมนู Alerting → Alert rules</li>
+      <li><strong>Alertmanager:</strong> <code>http://&lt;VM-IP&gt;:9093</code> (เฉพาะภายใน VM) หรือดูผ่าน <code>docker logs alertmanager</code></li>
+    </ul>
+  </section>
+  <!-- ===== /APP_SPECIFIC: alerts ===== -->
+
+  <!-- ===== APP_SPECIFIC: scripts ===== -->
+  <section id="scripts" class="section">
+    <h2>คำสั่ง Helper</h2>
+    <p>คำสั่งทั้งหมดอยู่ที่ <code>/usr/local/sbin/monitoring-*</code> — รันด้วย <code>sudo</code></p>
+
+    <table class="config-table">
+      <tr><th>คำสั่ง</th><th>หน้าที่</th><th>ตัวอย่าง</th></tr>
+      <tr><td><code>monitoring-info</code></td><td>แสดง URL, username, password</td><td><code>sudo monitoring-info</code></td></tr>
+      <tr><td><code>monitoring-status</code></td><td>ตรวจสอบ health ทุกระบบ</td><td><code>sudo monitoring-status</code></td></tr>
+      <tr><td><code>monitoring-list-targets</code></td><td>แสดงรายชื่อ target ทั้งหมด</td><td><code>sudo monitoring-list-targets</code></td></tr>
+      <tr><td><code>monitoring-add-http</code></td><td>เพิ่ม HTTP/HTTPS target</td><td><code>sudo monitoring-add-http https://example.com my-site</code></td></tr>
+      <tr><td><code>monitoring-add-node</code></td><td>เพิ่ม Linux VM target</td><td><code>sudo monitoring-add-node 10.0.0.12:9100 web-01</code></td></tr>
+      <tr><td><code>monitoring-add-tcp</code></td><td>เพิ่ม TCP port target</td><td><code>sudo monitoring-add-tcp 10.0.0.20:5432 postgres</code></td></tr>
+      <tr><td><code>monitoring-add-ping</code></td><td>เพิ่ม ping target</td><td><code>sudo monitoring-add-ping 10.0.0.30 router</code></td></tr>
+      <tr><td><code>monitoring-remove-target</code></td><td>ลบเป้าหมายการเฝ้าระวังออก</td><td><code>sudo monitoring-remove-target my-site</code></td></tr>
+      <tr><td><code>monitoring-setup-webhook</code></td><td>ตั้งค่า Slack/Discord Webhook</td><td><code>sudo monitoring-setup-webhook https://hooks.slack.com/...</code></td></tr>
+      <tr><td><code>monitoring-update</code></td><td>อัปเดตระบบพร้อมระบบ Rollback</td><td><code>sudo monitoring-update</code></td></tr>
+      <tr><td><code>monitoring-reload</code></td><td>Reload Prometheus/Alertmanager config</td><td><code>sudo monitoring-reload</code></td></tr>
+      <tr><td><code>monitoring-reset-grafana-password</code></td><td>สุ่ม password Grafana ใหม่</td><td><code>sudo monitoring-reset-grafana-password</code></td></tr>
+    </table>
+
+    <div class="note">
+      <strong>คำสั่ง <code>monitoring-*</code> ทุกคำสั่งต้องใช้ <code>sudo</code></strong> — เพราะอ่าน/เขียนไฟล์ config และ reload Prometheus
+    </div>
+  </section>
+  <!-- ===== /APP_SPECIFIC: scripts ===== -->
+
+  <!-- ===== APP_SPECIFIC: dashboards ===== -->
+  <section id="dashboards" class="section">
+    <h2>Dashboard</h2>
+
+    <h3>การเพิ่ม Dashboard ใหม่</h3>
+    <p>วางไฟล์ dashboard JSON ในโฟลเดอร์นี้ — Grafana จะโหลดให้อัตโนมัติ:</p>
+    <pre><code>/opt/monitoring/grafana/dashboards/</code></pre>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>ดาวน์โหลด dashboard JSON จาก <a href="https://grafana.com/grafana/dashboards/" target="_blank" rel="noopener">Grafana Dashboard Library</a></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>คัดลอกไฟล์ไปที่ VM:</p>
+        <pre><code>sudo cp dashboard.json /opt/monitoring/grafana/dashboards/</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Restart Grafana เพื่อโหลด dashboard ใหม่:</p>
+        <pre><code>cd /opt/monitoring
+docker compose restart grafana</code></pre>
+      </div>
+    </div>
+
+    <h3>Dashboard ยอดนิยม</h3>
+    <table class="config-table">
+      <tr><th>Dashboard</th><th>ID</th><th>ใช้สำหรับ</th></tr>
+      <tr><td>Node Exporter Full</td><td>1860</td><td>ดู metrics ของ Linux VM แบบละเอียด</td></tr>
+      <tr><td>Blackbox Exporter</td><td>7587</td><td>ดู uptime และ response time ของ HTTP targets</td></tr>
+      <tr><td>cAdvisor Exporter</td><td>14282</td><td>ดู metrics ของ Docker containers</td></tr>
+    </table>
+
+    <h3>สร้าง Dashboard เอง</h3>
+    <ul>
+      <li>เปิด Grafana → <strong>+</strong> → <strong>Dashboard</strong> → <strong>Add visualization</strong></li>
+      <li>เลือก data source: <strong>Prometheus</strong></li>
+      <li>เขียน PromQL query → ปรับแต่งกราฟ → Save</li>
+    </ul>
+
+    <div class="note">
+      <strong>Tip:</strong> Grafana มี built-in dashboard provisioning — dashboard ที่วางใน <code>/opt/monitoring/grafana/dashboards/</code> จะถูกโหลดอัตโนมัติและอัปเดตเมื่อ restart Grafana
+    </div>
+  </section>
+  <!-- ===== /APP_SPECIFIC: dashboards ===== -->
+
+  <!-- ====== NAV BUTTONS ====== -->
+  <div class="nav-buttons">
+    <button class="btn-prev" disabled>← ก่อนหน้า</button>
+    <span class="nav-indicator">1 / 12</span>
+    <button class="btn-next">ถัดไป →</button>
+  </div>
+
+  <!-- ====== VERSION FOOTER ====== -->
+  <footer class="content-footer">
+    <h4>ข้อมูล Image</h4>
+    <table class="version-table">
+      <tr><td>Image</td><td>grafana-prometheus-image v1</td></tr>
+      <tr><td>OS</td><td>Ubuntu 26.04</td></tr>
+      <tr><td>วันที่ Build</td><td>2026-07-12</td></tr>
+      <tr><td>Grafana</td><td>11.6.5 (OSS)</td></tr>
+      <tr><td>Prometheus</td><td>v3.13.1</td></tr>
+      <tr><td>Alertmanager</td><td>v0.33.1</td></tr>
+      <tr><td>Exporters</td><td>node_exporter v1.12.0, blackbox_exporter master-distroless</td></tr>
+    </table>
+  </footer>
+
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT — Navigation + Search
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.nav-link');
+  var navList = document.querySelector('.nav-list');
+  var searchInput = document.querySelector('.search');
+  var prevBtn = document.querySelector('.btn-prev');
+  var nextBtn = document.querySelector('.btn-next');
+  var indicator = document.querySelector('.nav-indicator');
+
+  var sectionIds = Array.from(sections).map(function(s) { return s.id; });
+  var currentIndex = 0;
+
+  function showSection(id) {
+    sections.forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.classList.add('active');
+
+    navLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+
+    currentIndex = sectionIds.indexOf(id);
+    if (currentIndex < 0) currentIndex = 0;
+    updateNavButtons();
+
+    if (history.pushState) {
+      history.pushState(null, '', '#' + id);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function updateNavButtons() {
+    prevBtn.disabled = (currentIndex <= 0);
+    nextBtn.disabled = (currentIndex >= sectionIds.length - 1);
+    indicator.textContent = (currentIndex + 1) + ' / ' + sectionIds.length;
+  }
+
+  function goPrev() {
+    if (currentIndex > 0) showSection(sectionIds[currentIndex - 1]);
+  }
+
+  function goNext() {
+    if (currentIndex < sectionIds.length - 1) showSection(sectionIds[currentIndex + 1]);
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = link.getAttribute('href').slice(1);
+      showSection(id);
+    });
+  });
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  document.querySelectorAll('.goto-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = link.getAttribute('data-target');
+      if (targetId) showSection(targetId);
+    });
+  });
+
+  window.addEventListener('popstate', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash && sectionIds.indexOf(hash) >= 0) {
+      showSection(hash);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+  });
+
+  searchInput.addEventListener('input', function() {
+    var q = searchInput.value.toLowerCase();
+    var items = navList.querySelectorAll('li');
+    items.forEach(function(li) {
+      var text = li.textContent.toLowerCase();
+      li.style.display = text.indexOf(q) >= 0 ? '' : 'none';
+    });
+  });
+
+  var hash = window.location.hash.slice(1);
+  if (hash && sectionIds.indexOf(hash) >= 0) {
+    showSection(hash);
+  } else {
+    updateNavButtons();
+  }
+
+})();
+</script>
+
+</body>
+</html>

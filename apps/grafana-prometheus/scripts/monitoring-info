@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+INFO_FILE=/root/README-grafana-prometheus-image.txt
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-info" >&2
+  exit 1
+fi
+
+if [ -f "$INFO_FILE" ]; then
+  cat "$INFO_FILE"
+else
+  echo "Info file not found: $INFO_FILE"
+  echo "Try: systemctl status grafana-prometheus-bootstrap.service"
+  exit 1
+fi

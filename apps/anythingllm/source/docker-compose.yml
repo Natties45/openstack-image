@@ -1,0 +1,25 @@
+services:
+  anythingllm:
+    image: mintplexlabs/anythingllm:1.14.0
+    container_name: anythingllm
+    user: "1000:1000"
+    volumes:
+      - anythingllm_data:/app/storage
+    environment:
+      - STORAGE_DIR=/app/storage
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27
+    container_name: anythingllm-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - anythingllm
+    restart: unless-stopped
+
+volumes:
+  anythingllm_data:

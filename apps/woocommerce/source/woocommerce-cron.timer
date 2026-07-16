@@ -1,0 +1,10 @@
+[Unit]
+Description=Run WooCommerce cron and queue every 5 minutes
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+Unit=woocommerce-cron.service
+
+[Install]
+WantedBy=timers.target

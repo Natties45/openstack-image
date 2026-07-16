@@ -1,0 +1,68 @@
+#!/bin/bash
+# n8n-cert-status — show SSL certificate status for n8n
+# Shows: cert presence, expiry date, current mode (HTTP/HTTPS), .env protocol
+
+WORK_DIR="/opt/n8n"
+ENV_FILE="${WORK_DIR}/.env"
+CERT_FULLCHAIN="${WORK_DIR}/certs/fullchain.pem"
+CERT_PRIVKEY="${WORK_DIR}/certs/privkey.pem"
+
+echo "=== n8n SSL Certificate Status ==="
+echo ""
+
+# ── Cert files ──
+echo "Certificate files:"
+if [ -f "${CERT_FULLCHAIN}" ]; then
+  echo "  [OK]   ${CERT_FULLCHAIN}"
+else
+  echo "  [MISS] ${CERT_FULLCHAIN}"
+fi
+if [ -f "${CERT_PRIVKEY}" ]; then
+  echo "  [OK]   ${CERT_PRIVKEY}"
+else
+  echo "  [MISS] ${CERT_PRIVKEY}"
+fi
+echo ""
+
+# ── Cert details ──
+if [ -f "${CERT_FULLCHAIN}" ]; then
+  echo "Certificate details:"
+  openssl x509 -in "${CERT_FULLCHAIN}" -noout -subject -issuer -dates 2>/dev/null || echo "  [ERROR] Cannot read certificate"
+  echo ""
+fi
+
+# ── Current mode ──
+if [ -f "${ENV_FILE}" ]; then
+  PROTOCOL=$(grep -oP '(?<=N8N_PROTOCOL=)[^\s]+' "${ENV_FILE}" 2>/dev/null || echo "unknown")
+  HOST=$(grep -oP '(?<=N8N_HOST=)[^\s]+' "${ENV_FILE}" 2>/dev/null || echo "unknown")
+  PROXY_HOPS=$(grep -oP '(?<=N8N_PROXY_HOPS=)[^\s]+' "${ENV_FILE}" 2>/dev/null || echo "unknown")
+  echo "Current .env settings:"
+  echo "  N8N_PROTOCOL : ${PROTOCOL}"
+  echo "  N8N_HOST     : ${HOST}"
+  echo "  N8N_PROXY_HOPS: ${PROXY_HOPS}"
+  echo "  Access URL   : ${PROTOCOL}://${HOST}/"
+else
+  PROTOCOL="unknown"
+  echo "  .env not found — bootstrap has not run yet"
+fi
+echo ""
+
+# ── Summary ──
+if [ -f "${CERT_FULLCHAIN}" ] && [ -f "${CERT_PRIVKEY}" ]; then
+  if [ "${PROTOCOL}" = "https" ]; then
+    echo "Status: HTTPS ENABLED (port 80 → 443 redirect)"
+  else
+    echo "Status: CERTS PRESENT but HTTPS NOT ENABLED"
+    echo "  Run 'n8n-https-enable' to activate HTTPS"
+  fi
+else
+  if [ "${PROTOCOL}" = "https" ]; then
+    echo "Status: .env SAYS HTTPS but CERTS MISSING — bootstrap will fall back to HTTP"
+    echo "  Place certs at /opt/n8n/certs/ then run n8n-https-enable"
+  else
+    echo "Status: HTTP ONLY (no certs)"
+    echo "  To enable HTTPS:"
+    echo "  1. Place certs at /opt/n8n/certs/fullchain.pem + privkey.pem"
+    echo "  2. Run: n8n-https-enable"
+  fi
+fi

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TARGET_DIR=/opt/monitoring/prometheus/targets
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-remove-target <name>" >&2
+  exit 1
+fi
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: sudo monitoring-remove-target <name>" >&2
+  exit 1
+fi
+
+name="$1"
+found=0
+
+for file in "$TARGET_DIR"/*.yml; do
+  if [ -f "$file" ] && grep -q "name: $name$" "$file"; then
+    echo "Found target '$name' in $(basename "$file"). Removing..."
+    awk -v target_name="$name" '
+    /^- targets:/ {
+      if (block != "" && skip == 0) { printf "%s", block }
+      block = $0 "\n"
+      skip = 0
+      next
+    }
+    {
+      if (skip == 0) {
+        block = block $0 "\n"
+        if ($0 ~ "name: " target_name "$") { skip = 1; block = "" }
+      }
+    }
+    END {
+      if (block != "" && skip == 0) { printf "%s", block }
+    }' "$file" > "${file}.tmp"
+    
+    mv "${file}.tmp" "$file"
+    found=1
+  fi
+done
+
+if [ "$found" -eq 1 ]; then
+  monitoring-reload
+  echo "Target '$name' has been removed."
+else
+  echo "Target '$name' not found."
+  exit 1
+fi

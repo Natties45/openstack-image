@@ -1,0 +1,5 @@
+- targets:
+    - grafana:3000
+  labels:
+    name: grafana-tcp
+    role: self-check

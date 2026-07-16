@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR=/opt/monitoring
+ALERTMANAGER_FILE="$APP_DIR/alertmanager/alertmanager.yml"
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-setup-webhook <SLACK_OR_DISCORD_WEBHOOK_URL>" >&2
+  exit 1
+fi
+
+if [ "$#" -ne 1 ]; then
+  echo "Usage: sudo monitoring-setup-webhook https://hooks.slack.com/services/..." >&2
+  echo "(For Discord, simply append /slack to your discord webhook URL)" >&2
+  exit 1
+fi
+
+WEBHOOK_URL="$1"
+
+cat > "$ALERTMANAGER_FILE" << EOF
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: slack-webhook
+  group_by:
+    - alertname
+    - job
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: slack-webhook
+    slack_configs:
+      - api_url: "$WEBHOOK_URL"
+        send_resolved: true
+        title: '{{ template "slack.default.title" . }}'
+        text: '{{ template "slack.default.text" . }}'
+
+inhibit_rules:
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal:
+      - alertname
+      - instance
+EOF
+
+chown root:root "$ALERTMANAGER_FILE"
+chmod 644 "$ALERTMANAGER_FILE"
+
+curl -fsS -X POST http://127.0.0.1:9093/-/reload >/dev/null
+echo "Alertmanager configured with Slack/Discord webhook and reloaded."

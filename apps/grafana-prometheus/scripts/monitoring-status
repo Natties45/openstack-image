@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR=/opt/monitoring
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-status" >&2
+  exit 1
+fi
+
+echo "== systemd =="
+systemctl --no-pager --full status grafana-prometheus-bootstrap.service | sed -n '1,8p' || true
+
+echo
+echo "== containers =="
+docker compose -f "$APP_DIR/docker-compose.yml" --env-file "$APP_DIR/.env" ps
+
+echo "== time sync (ntp) =="
+if timedatectl status | grep -q "System clock synchronized: yes"; then
+  echo -e "\033[0;32mNTP Synchronized: OK\033[0m"
+else
+  echo -e "\033[0;31mWARNING: NTP is NOT synchronized. Time drift may corrupt Prometheus metrics.\033[0m"
+fi
+
+echo
+echo "== local health =="
+curl -fsS http://127.0.0.1/ >/dev/null && echo "Grafana via Nginx: OK" || echo "Grafana via Nginx: FAIL"
+curl -fsS http://127.0.0.1:9090/-/healthy >/dev/null && echo "Prometheus: OK" || echo "Prometheus: FAIL"
+curl -fsS http://127.0.0.1:9093/-/healthy >/dev/null && echo "Alertmanager: OK" || echo "Alertmanager: FAIL"
+
+echo
+echo "== prometheus target summary =="
+curl -fsS http://127.0.0.1:9090/api/v1/targets | jq -r '
+  .data.activeTargets
+  | group_by(.health)
+  | map({health: .[0].health, count: length})
+  | .[]
+  | "\(.health): \(.count)"' || true
+
+echo
+echo "== disk =="
+usage_str=$(df -h / | awk 'NR==2 {print $5}')
+usage_int=${usage_str%%%}
+color="\033[0;32m" # Green
+if [ "$usage_int" -ge 90 ]; then
+  color="\033[0;31m" # Red
+elif [ "$usage_int" -ge 80 ]; then
+  color="\033[0;33m" # Yellow
+fi
+echo -e "Root Disk Usage: ${color}${usage_str}\033[0m"
+if [ "$usage_int" -ge 90 ]; then
+  echo -e "\033[0;31mWARNING: Disk space is critically low (>90%). Please expand disk to prevent database corruption.\033[0m"
+fi
+echo
+df -h / /var/lib/docker 2>/dev/null || df -h /

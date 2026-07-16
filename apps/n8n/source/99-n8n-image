@@ -1,0 +1,42 @@
+#!/bin/sh
+# Message of the Day for n8n Golden Image (playbook §9 — English, executable)
+
+# Dynamic IP — first global IP, Docker bridge filtered
+N8N_IP=$(ip -4 addr show scope global 2>/dev/null | grep -vE 'docker[0-9]+|br-' | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | sort -u | head -1)
+[ -z "$N8N_IP" ] && N8N_IP="<YOUR_SERVER_IP>"
+
+# Check if HTTPS is active (cert present + .env protocol=https)
+HTTPS_ACTIVE="no"
+if [ -f /opt/n8n/.env ]; then
+  PROTOCOL=$(grep -oP '(?<=N8N_PROTOCOL=)[^\s]+' /opt/n8n/.env 2>/dev/null || echo "http")
+  if [ "$PROTOCOL" = "https" ]; then
+    HTTPS_ACTIVE="yes"
+  fi
+fi
+
+printf "\n"
+printf "========================================================================\n"
+printf "  Welcome to the n8n Workflow Automation Server!\n"
+printf "========================================================================\n"
+if [ "$HTTPS_ACTIVE" = "yes" ]; then
+  printf "  Access URL     : https://%s/  (HTTPS enabled)\n" "$N8N_IP"
+  printf "  Port 80        : redirects to 443\n"
+else
+  printf "  Access URL     : http://%s/\n" "$N8N_IP"
+  printf "  Direct n8n     : http://127.0.0.1:5678/ (localhost only)\n"
+fi
+printf "  Credentials    : /root/n8n-credentials.txt\n"
+printf "  Docs           : /root/README-n8n-image.txt\n"
+printf "  Config         : /opt/n8n\n"
+printf "  Data           : Docker volumes (db_storage, n8n_storage)\n"
+printf "  Logs           : journalctl -u n8n-bootstrap -n 80 --no-pager\n"
+printf "  Helpers        : n8n-status, n8n-logs, n8n-restart, n8n-upgrade,\n"
+printf "                   n8n-rollback, n8n-exec,\n"
+printf "                   n8n-https-enable, n8n-cert-status, n8n-https-disable\n"
+printf "========================================================================\n"
+if [ "$HTTPS_ACTIVE" = "no" ]; then
+  printf "  HTTPS setup: n8n-cert-status  (check cert status)\n"
+  printf "              n8n-https-enable (enable HTTPS after placing certs)\n"
+fi
+printf "  Setup: cat /root/README-n8n-image.txt\n"
+printf "\n"

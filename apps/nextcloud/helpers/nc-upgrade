@@ -1,0 +1,48 @@
+#!/bin/bash
+set -e
+
+COMPOSE_DIR="/opt/nextcloud"
+PREV_IMAGE_FILE="$COMPOSE_DIR/.previous-image"
+LOG_FILE="/var/log/nextcloud-upgrade.log"
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') $1" | tee -a "$LOG_FILE"
+}
+
+cd "$COMPOSE_DIR"
+
+log "=== Upgrade started ==="
+
+CURRENT_IMAGE=$(docker inspect nextcloud-nextcloud-1 --format '{{.Config.Image}}' 2>/dev/null || echo "unknown")
+log "Current image: $CURRENT_IMAGE"
+
+echo "$CURRENT_IMAGE" > "$PREV_IMAGE_FILE"
+chmod 600 "$PREV_IMAGE_FILE"
+log "Saved previous image to $PREV_IMAGE_FILE"
+
+log "Enabling maintenance mode"
+docker compose exec -T -u www-data nextcloud php occ maintenance:mode --on
+
+log "Pulling new Nextcloud image"
+docker compose pull nextcloud
+
+log "Restarting with new image"
+docker compose up -d
+docker compose --profile http restart nginx
+
+log "Waiting for ready..."
+delays=(2 5 10 15 30 30 30 30 30 30 30 30 30 30 30)
+for delay in "${delays[@]}"; do
+    if docker compose exec -T -u www-data nextcloud php occ status 2>/dev/null | grep -q "installed: true"; then
+        log "Nextcloud ready"
+        break
+    fi
+    sleep "$delay"
+done
+
+log "Disabling maintenance mode"
+docker compose exec -T -u www-data nextcloud php occ maintenance:mode --off
+
+NEW_IMAGE=$(docker inspect nextcloud-nextcloud-1 --format '{{.Config.Image}}')
+log "New image: $NEW_IMAGE"
+log "=== Upgrade completed ==="

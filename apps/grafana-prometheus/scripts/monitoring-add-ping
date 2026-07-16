@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FILE=/opt/monitoring/prometheus/targets/ping.yml
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-add-ping <ip-or-hostname> <name>" >&2
+  exit 1
+fi
+
+if [ "$#" -ne 2 ]; then
+  echo "Usage: sudo monitoring-add-ping 10.0.0.30 router-01" >&2
+  exit 1
+fi
+
+target="$1"
+raw_name="$2"
+name="$(echo "$raw_name" | sed 's/[^a-zA-Z0-9_-]//g')"
+if [ -z "$name" ]; then
+  echo "Error: Name must contain valid characters (a-z, A-Z, 0-9, -, _)." >&2
+  exit 1
+fi
+if [ "$name" != "$raw_name" ]; then
+  echo "Notice: Name sanitized to '$name'"
+fi
+
+if [ -f "$FILE" ]; then
+  if grep -qF -- "- $target" "$FILE" || grep -q "name: $name$" "$FILE"; then
+    echo "Error: Target '$target' or name '$name' already exists." >&2
+    exit 1
+  fi
+fi
+
+cat >> "$FILE" << EOF
+- targets:
+    - $target
+  labels:
+    name: $name
+    role: ping
+EOF
+
+monitoring-reload
+echo "Added ping target: $name -> $target"

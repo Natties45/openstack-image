@@ -1,0 +1,14 @@
+#!/bin/bash
+# n8n-exec — run n8n CLI command inside the n8n container
+# Usage: n8n-exec <command> [args...]
+# Example: n8n-exec export:workflow --all
+
+set -e
+
+CONTAINER=$(cd /opt/n8n && docker compose ps -q n8n)
+if [ -z "${CONTAINER}" ]; then
+  echo "ERROR: n8n container is not running. Start it first with 'n8n-restart'"
+  exit 1
+fi
+
+docker exec -i "${CONTAINER}" n8n "$@"

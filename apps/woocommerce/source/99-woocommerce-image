@@ -1,0 +1,15 @@
+#!/bin/sh
+cat << 'EOF'
+
+WooCommerce image
+  Store:       http://<VM-IP>
+  Admin:       http://<VM-IP>/wp-admin/
+  Credentials: /root/woocommerce-credentials.txt
+  App dir:     /opt/woocommerce
+  Readme:      /root/README-woocommerce-image.txt
+
+Useful commands:
+  cd /opt/woocommerce && docker compose ps
+  systemctl status woocommerce-cron.timer --no-pager
+
+EOF

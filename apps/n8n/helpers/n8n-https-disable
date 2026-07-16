@@ -1,0 +1,55 @@
+#!/bin/bash
+# n8n-https-disable — disable HTTPS, revert to HTTP mode
+# Actions:
+#   1. Update .env (N8N_PROTOCOL=http, N8N_SECURE_COOKIE=false, N8N_PROXY_HOPS=1)
+#   2. Revert WEBHOOK_URL to http://<IP>/ (uses detected IP)
+#   3. Activate HTTP nginx config (port 80 serves directly)
+#   4. Restart stack
+# Note: Cert files are PRESERVED (not deleted) — user can re-enable later
+# N8N_PROXY_HOPS=1 because nginx is always in front of n8n (even in HTTP mode)
+set -e
+
+WORK_DIR="/opt/n8n"
+ENV_FILE="${WORK_DIR}/.env"
+
+if [ ! -f "${ENV_FILE}" ]; then
+  echo "ERROR: .env not found at ${ENV_FILE}"
+  echo "Run n8n-bootstrap first (or reboot the VM) to generate .env"
+  exit 1
+fi
+
+# ── Detect current IP for WEBHOOK_URL ──
+DETECTED_IP=$(ip -4 addr show scope global 2>/dev/null | grep -vE 'docker[0-9]+|br-' | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | sort -u | head -1)
+[ -z "${DETECTED_IP}" ] && DETECTED_IP="localhost"
+
+# ── Confirm ──
+echo "=> Disabling HTTPS for n8n"
+echo "   Cert files will be PRESERVED at /opt/n8n/certs/"
+echo "   WEBHOOK_URL will revert to http://${DETECTED_IP}/"
+echo ""
+read -r -p "Continue? (y/N): " CONFIRM
+if [ "${CONFIRM}" != "y" ] && [ "${CONFIRM}" != "Y" ]; then
+  echo "Aborted."
+  exit 0
+fi
+
+echo "=> Updating .env for HTTP mode..."
+sed -i "s|N8N_HOST=.*|N8N_HOST=${DETECTED_IP}|" "${ENV_FILE}"
+sed -i "s|N8N_PROTOCOL=.*|N8N_PROTOCOL=http|" "${ENV_FILE}"
+sed -i "s|WEBHOOK_URL=.*|WEBHOOK_URL=http://${DETECTED_IP}/|" "${ENV_FILE}"
+sed -i "s|N8N_SECURE_COOKIE=.*|N8N_SECURE_COOKIE=false|" "${ENV_FILE}"
+sed -i "s|N8N_PROXY_HOPS=.*|N8N_PROXY_HOPS=1|" "${ENV_FILE}"
+
+echo "=> Activating HTTP nginx config (port 80 serves directly)..."
+cp "${WORK_DIR}/nginx/n8n-http.conf" "${WORK_DIR}/nginx/n8n.conf"
+
+echo "=> Restarting n8n stack..."
+cd "${WORK_DIR}"
+docker compose down
+docker compose up -d
+
+echo ""
+echo "=> HTTPS disabled. HTTP mode active."
+echo "   Access URL: http://${DETECTED_IP}/"
+echo "   Cert files preserved at /opt/n8n/certs/"
+echo "   To re-enable HTTPS later: n8n-https-enable"

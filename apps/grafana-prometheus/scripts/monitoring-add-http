@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FILE=/opt/monitoring/prometheus/targets/http.yml
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-add-http <url> <name>" >&2
+  exit 1
+fi
+
+if [ "$#" -ne 2 ]; then
+  echo "Usage: sudo monitoring-add-http https://example.com website-prod" >&2
+  exit 1
+fi
+
+target="$1"
+raw_name="$2"
+name="$(echo "$raw_name" | sed 's/[^a-zA-Z0-9_-]//g')"
+if [ -z "$name" ]; then
+  echo "Error: Name must contain valid characters (a-z, A-Z, 0-9, -, _)." >&2
+  exit 1
+fi
+if [ "$name" != "$raw_name" ]; then
+  echo "Notice: Name sanitized to '$name'"
+fi
+
+case "$target" in
+  http://*|https://*) ;;
+  *) echo "Target must start with http:// or https://" >&2; exit 1 ;;
+esac
+
+if [ -f "$FILE" ]; then
+  if grep -qF -- "- $target" "$FILE" || grep -q "name: $name$" "$FILE"; then
+    echo "Error: Target '$target' or name '$name' already exists." >&2
+    exit 1
+  fi
+fi
+
+cat >> "$FILE" << EOF
+- targets:
+    - $target
+  labels:
+    name: $name
+    role: http
+EOF
+
+monitoring-reload
+echo "Added HTTP target: $name -> $target"

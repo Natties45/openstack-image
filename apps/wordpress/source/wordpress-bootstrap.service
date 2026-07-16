@@ -1,0 +1,15 @@
+[Unit]
+Description=WordPress Docker Bootstrap
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+ConditionPathExists=/opt/wordpress/docker-compose.yml
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/wordpress-bootstrap.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

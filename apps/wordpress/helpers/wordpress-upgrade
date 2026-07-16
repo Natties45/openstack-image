@@ -1,0 +1,9 @@
+#!/bin/bash
+set -euo pipefail
+cd /opt/wordpress
+cp docker-compose.yml .previous-image
+rm -rf .previous-images
+cp -a images .previous-images
+docker compose --profile http --profile tools build --pull
+docker compose --profile http up -d
+echo "Upgrade complete. Previous docker-compose.yml saved at /opt/wordpress/.previous-image and previous Dockerfiles at /opt/wordpress/.previous-images"

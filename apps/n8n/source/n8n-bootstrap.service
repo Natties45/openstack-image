@@ -1,0 +1,14 @@
+[Unit]
+Description=n8n Bootstrap Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/n8n-bootstrap.sh
+RemainAfterExit=yes
+StandardOutput=append:/var/log/n8n-bootstrap.log
+StandardError=append:/var/log/n8n-bootstrap.log
+
+[Install]
+WantedBy=multi-user.target

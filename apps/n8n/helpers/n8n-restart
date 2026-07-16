@@ -1,0 +1,3 @@
+#!/bin/bash
+# n8n-restart — restart n8n stack (nginx always-on, no profiles)
+cd /opt/n8n && docker compose restart

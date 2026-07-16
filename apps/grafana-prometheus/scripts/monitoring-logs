@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# monitoring-logs — View recent logs for all monitoring containers
+# Usage: sudo monitoring-logs [container-name]
+#   Without argument: shows last 50 lines for all containers
+#   With container: shows logs for specific container (e.g., grafana, prometheus)
+
+APP_DIR=/opt/monitoring
+
+if [ $# -ge 1 ]; then
+  docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=50 "$@"
+else
+  docker compose -f "$APP_DIR/docker-compose.yml" logs --tail=50
+fi

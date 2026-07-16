@@ -1,0 +1,8 @@
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+# Suites ต้องตรงกับ OS ของ VM — build script จะประเมินและตั้งค่าให้อัตโนมัติ
+# ค่าเริ่มต้น: noble (Ubuntu 24.04) — ถ้า VM เป็น Ubuntu 26.04 (resolute) ต้องเปลี่ยน
+Suites: noble
+Components: stable
+Architectures: amd64
+Signed-By: /etc/apt/keyrings/docker.asc

@@ -1,0 +1,3 @@
+#!/bin/bash
+# n8n-logs — tail n8n logs
+cd /opt/n8n && docker compose logs --tail=50 "$@"

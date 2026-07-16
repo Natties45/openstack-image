@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WordPress — User Manual</title>
+<style>
+:root {
+  --sidebar-w: 260px;
+  --bg: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-code: #f0f0f0;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --active-bg: #eff6ff;
+  --active-border: #2563eb;
+  --border: #e5e7eb;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 20px 20px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-icon { font-size: 22px; }
+
+.app-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search {
+  margin: 16px 16px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search:focus { border-color: var(--accent); }
+.search::placeholder { color: var(--text-muted); }
+
+.nav-list {
+  list-style: none;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-link {
+  display: block;
+  padding: 8px 20px 8px 17px;
+  border-left: 3px solid transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-heading); }
+
+.nav-link.active {
+  background: var(--active-bg);
+  border-left-color: var(--active-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-version {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 820px;
+  padding: 48px 56px 80px;
+  min-height: 100vh;
+}
+
+.content-header {
+  margin-bottom: 36px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.section { display: none; }
+.section.active { display: block; }
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.section p { margin-bottom: 14px; }
+.section ul, .section ol { padding-left: 24px; margin-bottom: 14px; }
+.section li { margin-bottom: 6px; }
+.section li > ul, .section li > ol { margin-top: 4px; margin-bottom: 0; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1e293b;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.step-body { flex: 1; }
+.step-body p { margin-bottom: 6px; }
+
+.note, .warning {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+}
+
+.warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.note strong, .warning strong { font-weight: 600; }
+
+.config-table, .version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.config-table th, .config-table td,
+.version-table th, .version-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.config-table th {
+  background: var(--bg-sidebar);
+  font-weight: 600;
+  color: var(--text-heading);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.config-table td:first-child,
+.version-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.config-table tr:hover { background: #fafafa; }
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-prev, .btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.btn-prev:hover:not(:disabled),
+.btn-next:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-prev:disabled, .btn-next:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-indicator {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.content-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.content-footer h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-table { max-width: 520px; }
+.version-table td { padding: 6px 14px; border: none; font-size: 13px; }
+.version-table td:first-child { color: var(--text-muted); width: 150px; }
+
+@media print {
+  .sidebar, .nav-buttons, .search { display: none !important; }
+  .content { margin-left: 0; max-width: none; padding: 20px 0; }
+  .section { display: block !important; page-break-after: always; margin-bottom: 30px; }
+  .section:last-child { page-break-after: auto; }
+  .content-header { border-bottom: 1px solid #000; }
+  .content-footer { border-top: 1px solid #000; }
+  pre { border: 1px solid #ccc; background: #f5f5f5; }
+  body { color: #000; font-size: 13px; }
+}
+
+@media (max-width: 900px) {
+  .content { padding: 32px 24px; }
+}
+
+@media (max-width: 700px) {
+  :root { --sidebar-w: 220px; }
+  .content { padding: 24px 16px 60px; }
+  .content-header h1 { font-size: 22px; }
+  .section h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <span class="app-icon">W</span>
+    <span class="app-name">WordPress</span>
+  </div>
+
+  <input type="search" class="search" placeholder="Search sections..." aria-label="Search sections">
+
+  <ul class="nav-list">
+    <li><a href="#overview" class="nav-link active">Overview</a></li>
+    <li><a href="#access" class="nav-link">Access</a></li>
+    <li><a href="#credentials" class="nav-link">Credentials</a></li>
+    <li><a href="#file-structure" class="nav-link">File Structure</a></li>
+    <li><a href="#helper-commands" class="nav-link">Helper Commands</a></li>
+    <li><a href="#https" class="nav-link">HTTPS</a></li>
+    <li><a href="#backup-restore" class="nav-link">Backup &amp; Restore</a></li>
+    <li><a href="#url-recovery" class="nav-link">URL Recovery</a></li>
+    <li><a href="#upgrade-rollback" class="nav-link">Upgrade &amp; Rollback</a></li>
+    <li><a href="#password-reset" class="nav-link">Password Reset</a></li>
+    <li><a href="#smtp" class="nav-link">SMTP</a></li>
+    <li><a href="#snapshot-clone" class="nav-link">Snapshot &amp; Clone</a></li>
+  </ul>
+
+  <div class="sidebar-version">
+    WordPress 7.0.0 · Ubuntu 26.04 · Built 2026-07-10
+  </div>
+</nav>
+
+<main class="content">
+  <header class="content-header">
+    <h1>WordPress — User Manual</h1>
+    <p class="subtitle">Customer Service image with WordPress 7.0.0, PHP 8.3 FPM, MariaDB 11.4.8, Nginx 1.30.3, and WP-CLI 2.12.0</p>
+  </header>
+
+  <section id="overview" class="section active">
+    <h2>Overview</h2>
+    <p>This image starts WordPress automatically on Ubuntu 26.04. On first boot, the stack is ready and you finish the WordPress browser wizard yourself. The image keeps the database and application files on Docker volumes so the site survives reboots and normal maintenance.</p>
+
+    <h3>Stack</h3>
+    <ul>
+      <li><strong>WordPress 7.0.0</strong> — application and PHP runtime</li>
+      <li><strong>PHP 8.3 FPM</strong> — PHP processing behind Nginx</li>
+      <li><strong>MariaDB 11.4.8</strong> — database for posts, users, and settings</li>
+      <li><strong>Nginx 1.30.3</strong> — web server and reverse proxy</li>
+      <li><strong>WP-CLI 2.12.0</strong> — command-line recovery and admin tasks</li>
+    </ul>
+
+    <h3>What this image is for</h3>
+    <ul>
+      <li>Quick browser-based WordPress setup</li>
+      <li>Simple helper commands for daily maintenance</li>
+      <li>Offline-safe first boot after the image is built</li>
+      <li>Easy recovery after IP or domain changes</li>
+    </ul>
+  </section>
+
+  <section id="access" class="section">
+    <h2>Access</h2>
+
+    <h3>Open the setup wizard</h3>
+    <table class="config-table">
+      <tr><th>Service</th><th>URL</th><th>Notes</th></tr>
+      <tr><td>WordPress setup</td><td><code>http://&lt;VM-IP&gt;/</code></td><td>Open the browser wizard on first boot</td></tr>
+    </table>
+
+    <h3>Security group ports</h3>
+    <ul>
+      <li><strong>TCP 80</strong> — HTTP for the setup wizard and normal access</li>
+      <li><strong>TCP 443</strong> — HTTPS after you switch to the HTTPS profile</li>
+      <li><strong>TCP 22</strong> — SSH for admin and recovery work</li>
+    </ul>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>Open <code>http://&lt;VM-IP&gt;/</code> in a browser.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>Complete the WordPress wizard, including site title, admin account, password, and email.</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>Sign in to <code>/wp-admin/</code> and start managing the site.</p></div>
+    </div>
+  </section>
+
+  <section id="credentials" class="section">
+    <h2>Credentials</h2>
+
+    <h3>Database credentials file</h3>
+    <p>The image writes database credentials to this file on first boot:</p>
+    <pre><code>/root/wordpress-credentials.txt</code></pre>
+
+    <h3>View the file</h3>
+    <pre><code>cat /root/wordpress-credentials.txt</code></pre>
+
+    <h3>What is inside</h3>
+    <p>The file contains database connection details for the local WordPress stack. It does not contain your WordPress admin password.</p>
+
+    <h3>Reset an admin password</h3>
+    <p>Use the <code>wp-cli</code> helper from the shell if you need to reset the WordPress admin password.</p>
+    <pre><code>cd /opt/wordpress
+wp-cli user list --role=administrator
+wp-cli user update &lt;admin-username&gt; --user_pass='&lt;new-strong-password&gt;'</code></pre>
+
+    <div class="warning">
+      <strong>Warning:</strong> Do not share the contents of <code>/root/wordpress-credentials.txt</code>. It contains database secrets.
+    </div>
+  </section>
+
+  <section id="file-structure" class="section">
+    <h2>File Structure</h2>
+
+    <h3>Main directories</h3>
+    <table class="config-table">
+      <tr><th>Path</th><th>Purpose</th><th>Edit?</th></tr>
+      <tr><td><code>/opt/wordpress/</code></td><td>Main stack directory</td><td>Yes</td></tr>
+      <tr><td><code>/opt/wordpress/nginx/</code></td><td>Nginx config files for HTTP and HTTPS</td><td>Yes</td></tr>
+      <tr><td><code>/opt/wordpress/php/</code></td><td>PHP settings such as upload limits</td><td>Yes</td></tr>
+      <tr><td><code>/opt/wordpress/certs/</code></td><td>TLS certificate files</td><td>Yes</td></tr>
+      <tr><td><code>/opt/wordpress/images/</code></td><td>Local Dockerfiles used to build the stack images</td><td>Yes</td></tr>
+    </table>
+
+    <h3>Editable config files</h3>
+    <table class="config-table">
+      <tr><th>File</th><th>What it controls</th></tr>
+      <tr><td><code>/opt/wordpress/docker-compose.yml</code></td><td>Services, volumes, ports, and profiles</td></tr>
+      <tr><td><code>/opt/wordpress/nginx/default.conf</code></td><td>HTTP reverse proxy settings</td></tr>
+      <tr><td><code>/opt/wordpress/nginx/default-https.conf</code></td><td>HTTPS listener and certificate paths</td></tr>
+      <tr><td><code>/opt/wordpress/php/wordpress.ini</code></td><td>PHP limits such as memory and upload size</td></tr>
+    </table>
+
+    <h3>Runtime files — do not edit</h3>
+    <table class="config-table">
+      <tr><th>File</th><th>Purpose</th></tr>
+      <tr><td><code>/opt/wordpress/.env</code></td><td>Generated database settings</td></tr>
+      <tr><td><code>/root/wordpress-credentials.txt</code></td><td>Generated database credentials summary</td></tr>
+      <tr><td><code>/var/log/wordpress-bootstrap.log</code></td><td>First-boot log</td></tr>
+    </table>
+
+    <h3>Data volumes — do not delete</h3>
+    <table class="config-table">
+      <tr><th>Volume</th><th>What it stores</th></tr>
+      <tr><td><code>db_data</code></td><td>MariaDB data: posts, users, settings, and site content</td></tr>
+      <tr><td><code>wp_data</code></td><td>WordPress files: uploads, plugins, themes, and core files</td></tr>
+    </table>
+  </section>
+
+  <section id="helper-commands" class="section">
+    <h2>Helper Commands</h2>
+
+    <p>Use these helpers instead of raw Docker commands for normal daily tasks.</p>
+
+    <table class="config-table">
+      <tr><th>Command</th><th>Purpose</th></tr>
+      <tr><td><code>wordpress-status</code></td><td>Show stack status with the HTTP profile</td></tr>
+      <tr><td><code>wordpress-logs</code></td><td>Show recent stack logs</td></tr>
+      <tr><td><code>wordpress-restart</code></td><td>Restart the HTTP stack</td></tr>
+      <tr><td><code>wordpress-upgrade</code></td><td>Rebuild local images from the bundled Dockerfiles and restart</td></tr>
+      <tr><td><code>wordpress-rollback</code></td><td>Restore the previous compose/Dockerfile backup and restart</td></tr>
+      <tr><td><code>wp-cli</code></td><td>Run WordPress CLI commands against this site</td></tr>
+    </table>
+
+    <h3>Examples</h3>
+    <pre><code>wordpress-status
+wordpress-logs
+wordpress-logs -f
+wordpress-restart
+wordpress-upgrade
+wordpress-rollback
+
+wp-cli --info
+wp-cli option get siteurl</code></pre>
+
+    <div class="note">
+      <strong>Tip:</strong> The helpers already change into <code>/opt/wordpress</code>, so you can run them from any directory.
+    </div>
+  </section>
+
+  <section id="https" class="section">
+    <h2>HTTPS</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Point your domain to this VM IP.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Place your certificate files in the cert directory:</p>
+        <pre><code>/opt/wordpress/certs/fullchain.pem
+/opt/wordpress/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Set safe file permissions:</p>
+        <pre><code>chmod 644 /opt/wordpress/certs/fullchain.pem
+chmod 600 /opt/wordpress/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>Switch from the HTTP profile to the HTTPS profile:</p>
+        <pre><code>cd /opt/wordpress
+docker compose --profile http stop nginx
+docker compose --profile https up -d nginx-https</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p>Confirm the secure site loads in the browser and with a quick HTTP check.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>Note:</strong> If you later change the domain, update the WordPress URLs too. See <a href="#url-recovery" class="goto-link" data-target="url-recovery">URL Recovery</a>.
+    </div>
+  </section>
+
+  <section id="backup-restore" class="section">
+    <h2>Backup &amp; Restore</h2>
+
+    <h3>Back up the database</h3>
+    <pre><code>cd /opt/wordpress
+source .env
+docker compose exec db mysqldump -u root -p"$MARIADB_ROOT_PASSWORD" wordpress &gt; db-backup.sql</code></pre>
+
+    <h3>Back up files and config</h3>
+    <pre><code>cd /opt/wordpress
+tar czf wp-files-backup.tar.gz .env nginx/ php/ docker-compose.yml</code></pre>
+
+    <h3>Restore the database</h3>
+    <pre><code>cd /opt/wordpress
+source .env
+cat db-backup.sql | docker compose exec -T db mysql -u root -p"$MARIADB_ROOT_PASSWORD" wordpress</code></pre>
+
+    <h3>Restore files and config</h3>
+    <pre><code>cd /opt/wordpress
+tar xzf wp-files-backup.tar.gz</code></pre>
+
+    <div class="warning">
+      <strong>Warning:</strong> Never run a full data-volume delete on a live customer site unless you intend to remove the site data.
+    </div>
+  </section>
+
+  <section id="url-recovery" class="section">
+    <h2>URL Recovery</h2>
+
+    <p>WordPress stores the site URL in the database. If the VM IP or domain changes, update both URL values.</p>
+
+    <h3>If you can still sign in</h3>
+    <ol>
+      <li>Open <strong>Settings → General</strong> in WordPress admin.</li>
+      <li>Update <strong>WordPress Address (URL)</strong> and <strong>Site Address (URL)</strong>.</li>
+      <li>Save the changes.</li>
+    </ol>
+
+    <h3>If admin access is broken</h3>
+    <pre><code>cd /opt/wordpress
+wp-cli option update siteurl http://&lt;NEW-VM-IP-OR-DOMAIN&gt;
+wp-cli option update home http://&lt;NEW-VM-IP-OR-DOMAIN&gt;
+wordpress-restart</code></pre>
+
+    <div class="note">
+      <strong>Tip:</strong> Use the same scheme you expect customers to use, such as <code>http://</code> during setup or <code>https://</code> after TLS is enabled.
+    </div>
+  </section>
+
+  <section id="upgrade-rollback" class="section">
+    <h2>Upgrade &amp; Rollback</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Take a backup first. See <a href="#backup-restore" class="goto-link" data-target="backup-restore">Backup &amp; Restore</a>.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Run the upgrade helper.</p>
+        <pre><code>wordpress-upgrade</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Check that the stack comes back cleanly.</p>
+        <pre><code>wordpress-status</code></pre>
+      </div>
+    </div>
+
+    <h3>Rollback</h3>
+    <p>If the upgrade causes trouble, restore the previous stack state with the rollback helper.</p>
+    <pre><code>wordpress-rollback
+wordpress-status</code></pre>
+
+    <div class="warning">
+      <strong>Warning:</strong> Upgrade and rollback affect the local stack images and config backups. Keep your own copy of important content backups before changing anything major.
+    </div>
+  </section>
+
+  <section id="password-reset" class="section">
+    <h2>Password Reset</h2>
+
+    <p>Use this section when a WordPress admin password is lost.</p>
+
+    <h3>Find the admin account</h3>
+    <pre><code>cd /opt/wordpress
+wp-cli user list --role=administrator</code></pre>
+
+    <h3>Set a new password</h3>
+    <pre><code>cd /opt/wordpress
+wp-cli user update &lt;admin-username&gt; --user_pass='&lt;new-strong-password&gt;'</code></pre>
+
+    <div class="note">
+      <strong>Note:</strong> The password reset changes the WordPress user password only. It does not change database credentials.
+    </div>
+  </section>
+
+  <section id="smtp" class="section">
+    <h2>SMTP</h2>
+
+    <p>This image does not include a mail server. If you need password reset emails or notifications, install an SMTP plugin and connect it to your email provider.</p>
+
+    <h3>Recommended plugin</h3>
+    <ul>
+      <li><strong>WP Mail SMTP</strong> — common choice for small-business sites</li>
+      <li><strong>FluentSMTP</strong> — another valid option if your mail provider supports it</li>
+    </ul>
+
+    <h3>Install with WP-CLI</h3>
+    <pre><code>cd /opt/wordpress
+wp-cli plugin install wp-mail-smtp --activate</code></pre>
+
+    <h3>Finish in WordPress admin</h3>
+    <ol>
+      <li>Open the plugin settings page in WordPress admin.</li>
+      <li>Enter your SMTP host, port, username, password, and sender address.</li>
+      <li>Send a test email before you rely on password reset mail.</li>
+    </ol>
+
+    <div class="warning">
+      <strong>Warning:</strong> Do not hardcode SMTP credentials in this manual. Store them in the plugin settings or your own secret manager.
+    </div>
+  </section>
+
+  <section id="snapshot-clone" class="section">
+    <h2>Snapshot &amp; Clone</h2>
+
+    <p>A snapshot is not a fresh install. A cloned VM keeps the same WordPress database, uploads, plugins, themes, and site URL from the source VM.</p>
+
+    <h3>What to expect</h3>
+    <ul>
+      <li>The new VM has the same site content as the source VM.</li>
+      <li>The new VM gets a new VM IP.</li>
+      <li>WordPress may still point to the old URL until you update it.</li>
+    </ul>
+
+    <h3>If you want a fresh site</h3>
+    <ol>
+      <li>Use a clean image instead of a snapshot clone.</li>
+      <li>Or remove the runtime stack data before the next first boot.</li>
+      <li>Then complete the wizard again from scratch.</li>
+    </ol>
+
+    <div class="warning">
+      <strong>Warning:</strong> A snapshot clone is useful for copy-and-test workflows, but it is not safe to treat it as a brand-new WordPress site without checking the database and site URL first.
+    </div>
+  </section>
+
+  <div class="nav-buttons">
+    <button class="btn-prev" disabled>← Previous</button>
+    <span class="nav-indicator">1 / 12</span>
+    <button class="btn-next">Next →</button>
+  </div>
+
+  <footer class="content-footer">
+    <h4>Image Details</h4>
+    <table class="version-table">
+      <tr><td>Image</td><td>WordPress</td></tr>
+      <tr><td>OS</td><td>Ubuntu 26.04</td></tr>
+      <tr><td>Build date</td><td>2026-07-10</td></tr>
+      <tr><td>WordPress</td><td>7.0.0</td></tr>
+      <tr><td>PHP</td><td>8.3 FPM</td></tr>
+      <tr><td>MariaDB</td><td>11.4.8</td></tr>
+      <tr><td>Nginx</td><td>1.30.3</td></tr>
+      <tr><td>WP-CLI</td><td>2.12.0</td></tr>
+    </table>
+  </footer>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.nav-link');
+  var navList = document.querySelector('.nav-list');
+  var searchInput = document.querySelector('.search');
+  var prevBtn = document.querySelector('.btn-prev');
+  var nextBtn = document.querySelector('.btn-next');
+  var indicator = document.querySelector('.nav-indicator');
+
+  var sectionIds = Array.from(sections).map(function(s) { return s.id; });
+  var currentIndex = 0;
+
+  function showSection(id) {
+    sections.forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.classList.add('active');
+
+    navLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+
+    currentIndex = sectionIds.indexOf(id);
+    if (currentIndex < 0) currentIndex = 0;
+    updateNavButtons();
+
+    if (history.pushState) {
+      history.pushState(null, '', '#' + id);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function updateNavButtons() {
+    prevBtn.disabled = (currentIndex <= 0);
+    nextBtn.disabled = (currentIndex >= sectionIds.length - 1);
+    indicator.textContent = (currentIndex + 1) + ' / ' + sectionIds.length;
+  }
+
+  function goPrev() {
+    if (currentIndex > 0) showSection(sectionIds[currentIndex - 1]);
+  }
+
+  function goNext() {
+    if (currentIndex < sectionIds.length - 1) showSection(sectionIds[currentIndex + 1]);
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = link.getAttribute('href').slice(1);
+      showSection(id);
+    });
+  });
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  document.querySelectorAll('.goto-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = link.getAttribute('data-target');
+      if (targetId) showSection(targetId);
+    });
+  });
+
+  window.addEventListener('popstate', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash && sectionIds.indexOf(hash) >= 0) {
+      showSection(hash);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+  });
+
+  searchInput.addEventListener('input', function() {
+    var q = searchInput.value.toLowerCase();
+    var items = navList.querySelectorAll('li');
+    items.forEach(function(li) {
+      var text = li.textContent.toLowerCase();
+      li.style.display = text.indexOf(q) >= 0 ? '' : 'none';
+    });
+  });
+
+  var hash = window.location.hash.slice(1);
+  if (hash && sectionIds.indexOf(hash) >= 0) {
+    showSection(hash);
+  } else {
+    updateNavButtons();
+  }
+})();
+</script>
+
+</body>
+</html>

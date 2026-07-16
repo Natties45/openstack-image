@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# OpenCode MOTD — แสดง Web UI URL + credentials
+
+# ดึง public IP (ลองหลายวิธี)
+PUBLIC_IP=""
+# ลองจาก metadata ก่อน (OpenStack)
+if command -v curl &>/dev/null; then
+  PUBLIC_IP=$(curl -sf --connect-timeout 2 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || true)
+fi
+# fallback: hostname -I
+if [ -z "$PUBLIC_IP" ]; then
+  PUBLIC_IP=$(hostname -I 2>/dev/null | awk '{print $1}') 2>/dev/null || true
+fi
+if [ -z "$PUBLIC_IP" ]; then
+  PUBLIC_IP="<VM_IP>"
+fi
+
+PASSWORD="************"
+if [ -f /etc/opencode/environment ]; then
+  PASSWORD=$(grep -oP 'OPENCODE_SERVER_PASSWORD=\K.*' /etc/opencode/environment 2>/dev/null || echo "************")
+fi
+
+echo ""
+echo "  ╔══════════════════════════════════════════════╗"
+echo "  ║       OpenCode AI Coding Agent               ║"
+echo "  ╠══════════════════════════════════════════════╣"
+printf "  ║  Web UI:   http://%-25s ║\n" "${PUBLIC_IP}:4096"
+printf "  ║  Username: %-32s ║\n" "opencode"
+printf "  ║  Password: %-32s ║\n" "${PASSWORD}"
+echo "  ╠══════════════════════════════════════════════╣"
+echo "  ║  Docs:     https://opencode.ai/docs          ║"
+echo "  ║  Config:   /etc/opencode/environment         ║"
+echo "  ║  Change:   edit /etc/opencode/environment    ║"
+echo "  ║            then: systemctl restart opencode  ║"
+echo "  ║                        MIT License            ║"
+echo "  ╚══════════════════════════════════════════════╝"
+echo ""

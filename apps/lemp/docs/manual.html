@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEMP Stack — คู่มือการใช้งาน</title>
+<style>
+/* ============================================================
+   Manual Template — Clean Minimal
+   ============================================================ */
+
+:root {
+  --sidebar-w: 260px;
+  --bg: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-code: #f0f0f0;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --active-bg: #eff6ff;
+  --active-border: #2563eb;
+  --border: #e5e7eb;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 20px 20px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-icon { font-size: 22px; }
+
+.app-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search {
+  margin: 16px 16px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.search::placeholder { color: var(--text-muted); }
+
+.nav-list {
+  list-style: none;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-link {
+  display: block;
+  padding: 8px 20px 8px 17px;
+  border-left: 3px solid transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-heading); }
+
+.nav-link.active {
+  background: var(--active-bg);
+  border-left-color: var(--active-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-version {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ===== CONTENT ===== */
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 820px;
+  padding: 48px 56px 80px;
+  min-height: 100vh;
+}
+
+.content-header {
+  margin-bottom: 36px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+/* ===== SECTIONS ===== */
+.section { display: none; }
+
+.section.active { display: block; }
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.section p {
+  margin-bottom: 14px;
+}
+
+.section ul, .section ol {
+  padding-left: 24px;
+  margin-bottom: 14px;
+}
+
+.section li { margin-bottom: 6px; }
+
+.section li > ul, .section li > ol { margin-top: 4px; margin-bottom: 0; }
+
+/* ===== CODE ===== */
+code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1e293b;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* ===== STEP NUMBERS ===== */
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.step-body { flex: 1; }
+
+.step-body p { margin-bottom: 6px; }
+
+/* ===== NOTE / WARNING BOXES ===== */
+.note, .warning {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+}
+
+.warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.note strong, .warning strong { font-weight: 600; }
+
+/* ===== CONFIG TABLE ===== */
+.config-table, .version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.config-table th, .config-table td,
+.version-table th, .version-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.config-table th {
+  background: var(--bg-sidebar);
+  font-weight: 600;
+  color: var(--text-heading);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.config-table td:first-child,
+.version-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.config-table tr:hover { background: #fafafa; }
+
+/* ===== NAV BUTTONS ===== */
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-prev, .btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.btn-prev:hover:not(:disabled),
+.btn-next:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-prev:disabled, .btn-next:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-indicator {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ===== FOOTER ===== */
+.content-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.content-footer h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-table { max-width: 400px; }
+
+.version-table td { padding: 6px 14px; border: none; font-size: 13px; }
+
+.version-table td:first-child { color: var(--text-muted); width: 120px; }
+
+/* ===== PRINT ===== */
+@media print {
+  .sidebar, .nav-buttons, .search { display: none !important; }
+
+  .content {
+    margin-left: 0;
+    max-width: none;
+    padding: 20px 0;
+  }
+
+  .section {
+    display: block !important;
+    page-break-after: always;
+    margin-bottom: 30px;
+  }
+
+  .section:last-child { page-break-after: auto; }
+
+  .content-header { border-bottom: 1px solid #000; }
+  .content-footer { border-top: 1px solid #000; }
+
+  pre {
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+  }
+
+  body { color: #000; font-size: 13px; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .content { padding: 32px 24px; }
+}
+
+@media (max-width: 700px) {
+  :root { --sidebar-w: 220px; }
+  .content { padding: 24px 16px 60px; }
+  .content-header h1 { font-size: 22px; }
+  .section h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <span class="app-icon">⚙️</span>
+    <span class="app-name">LEMP Stack</span>
+  </div>
+
+  <input type="search" class="search" placeholder="ค้นหาหัวข้อ..." aria-label="ค้นหาหัวข้อ">
+
+  <ul class="nav-list">
+    <li><a href="#overview" class="nav-link active">ภาพรวม</a></li>
+    <li><a href="#access" class="nav-link">การเข้าใช้งาน</a></li>
+    <li><a href="#credentials" class="nav-link">รหัสผ่าน</a></li>
+    <li><a href="#files" class="nav-link">โครงสร้างไฟล์</a></li>
+    <li><a href="#commands" class="nav-link">คำสั่งพื้นฐาน</a></li>
+    <li><a href="#profiles" class="nav-link">HTTP / HTTPS</a></li>
+    <li><a href="#backup" class="nav-link">Backup & Restore</a></li>
+    <li><a href="#upgrade" class="nav-link">การอัปเกรด</a></li>
+    <li><a href="#troubleshooting" class="nav-link">แก้ไขปัญหา</a></li>
+  </ul>
+
+  <div class="sidebar-version">
+    LEMP Stack image &middot; 2026-07-12
+  </div>
+</nav>
+
+<!-- ============================================================
+     CONTENT
+     ============================================================ -->
+<main class="content">
+
+  <header class="content-header">
+    <h1>LEMP Stack — คู่มือการใช้งาน</h1>
+    <p class="subtitle">Dev/Base Stack: Nginx + PHP-FPM + MariaDB สำหรับพัฒนาเว็บ PHP</p>
+  </header>
+
+  <!-- ===== overview ===== -->
+  <section id="overview" class="section active">
+    <h2>ภาพรวม</h2>
+    <p>LEMP Stack คือชุดซอฟต์แวร์สำหรับพัฒนาเว็บ PHP แบบสำเร็จรูป ประกอบด้วย Nginx (เว็บเซิร์ฟเวอร์), PHP-FPM (ตัวประมวลผล PHP), และ MariaDB (ฐานข้อมูล) — พร้อมใช้งานทันทีหลังจากบูตเครื่องครั้งแรก</p>
+    <p>Image นี้เป็น <strong>Dev/Base Stack</strong> สำหรับนักพัฒนาที่ต้องการ environment PHP + DB ที่ไม่ต้องติดตั้งเอง ไม่มี app wizard หรือหน้า welcome — แค่เปิด browser แล้วเริ่มเขียนโค้ด PHP ได้เลย</p>
+
+    <h3>Stack Components</h3>
+    <ul>
+      <li><strong>Nginx 1.30.3</strong> — เว็บเซิร์ฟเวอร์, reverse proxy ไปยัง PHP-FPM</li>
+      <li><strong>PHP 8.3.32 (FPM)</strong> — ตัวประมวลผล PHP พร้อม extensions: pdo_mysql, mysqli, mbstring, gd, zip, intl</li>
+      <li><strong>MariaDB 11.4.12 (LTS)</strong> — ฐานข้อมูล, รองรับจนถึง ~2029</li>
+    </ul>
+
+    <h3>คุณสมบัติเด่น</h3>
+    <ul>
+      <li><strong>Offline-safe</strong> — images ถูก build ไว้ใน golden image แล้ว ไม่ต้องดึงจาก internet ตอนบูต</li>
+      <li><strong>Idempotent bootstrap</strong> — รันซ้ำกี่ครั้งก็ไม่พัง, ใช้ .env เดิมถ้ามี</li>
+      <li><strong>Security hardening</strong> — server_tokens off, expose_php = Off, DB/PHP-FPM ไม่ expose port</li>
+      <li><strong>Dev tools ใน container</strong> — bash, nano, vim-tiny พร้อมในทุก container</li>
+      <li><strong>Helper commands</strong> — คำสั่งสั้น จำง่าย: lemp-status, lemp-logs, lemp-restart, lemp-shell, lemp-db</li>
+    </ul>
+  </section>
+  <!-- ===== /overview ===== -->
+
+  <!-- ===== access ===== -->
+  <section id="access" class="section">
+    <h2>การเข้าใช้งาน</h2>
+
+    <h3>URL</h3>
+    <table class="config-table">
+      <tr><th>Service</th><th>URL</th><th>หมายเหตุ</th></tr>
+      <tr><td>Nginx (HTTP)</td><td><code>http://&lt;VM-IP&gt;/</code></td><td>Port 80 — วาง PHP files ที่นี่</td></tr>
+      <tr><td>MariaDB</td><td><code>db:3306</code> (internal)</td><td>เข้าถึงผ่าน Docker network เท่านั้น</td></tr>
+      <tr><td>PHP-FPM</td><td><code>php-fpm:9000</code> (internal)</td><td>ผ่าน Nginx reverse proxy เท่านั้น</td></tr>
+    </table>
+
+    <h3>Security Group (Firewall)</h3>
+    <p>เปิด port ต่อไปนี้ที่ OpenStack Security Group:</p>
+    <ul>
+      <li><strong>TCP 80</strong> — HTTP (Nginx)</li>
+      <li><strong>TCP 22</strong> — SSH</li>
+      <li><strong>TCP 443</strong> — HTTPS (เมื่อเปิดใช้)</li>
+    </ul>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>เปิด browser ไปที่ <code>http://&lt;VM-IP&gt;/</code></p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>ถ้าเห็น <strong>403 Forbidden</strong> — ปกติ (ยังไม่มี index.php) สร้างไฟล์ PHP แล้วลองใหม่</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>วางไฟล์ PHP ของคุณใน <code>/var/www/html/</code> (ผ่าน lemp-shell หรือ SCP)</p></div>
+    </div>
+
+    <div class="note">
+      <strong>แนะนำ:</strong> ใช้ <code>lemp-shell</code> เพื่อเข้าไปใน PHP-FPM container แล้วสร้างไฟล์ PHP ได้ทันที
+    </div>
+  </section>
+  <!-- ===== /access ===== -->
+
+  <!-- ===== credentials ===== -->
+  <section id="credentials" class="section">
+    <h2>รหัสผ่าน & Credentials</h2>
+
+    <h3>ดูรหัสผ่าน</h3>
+    <p>รหัสผ่านถูกสร้างอัตโนมัติตอนบูตครั้งแรก ดูได้จากไฟล์:</p>
+    <pre><code>cat /root/lemp-credentials.txt</code></pre>
+
+    <h3>ตัวอย่าง Credentials</h3>
+    <pre><code>=== LEMP Stack Dev Base Image Credentials ===
+Generated: Sun Jul 12 04:54:42 PM +07 2026
+
+Database:
+  Host:     db (internal Docker network)
+  Name:     lempdb
+  User:     lempuser
+  Password: WaLk1KogCP11JpGkylBpa71VB1hdOmlo
+
+Root DB Password: WUjxOENCoWVwuzjRsCkvkMszwz4lRDex
+
+Detected VM IPs:
+  - 10.10.20.41
+  - 203.154.16.163</code></pre>
+
+    <h3>เชื่อมต่อ Database</h3>
+    <p>ใช้คำสั่ง <code>lemp-db</code> เพื่อเปิด MariaDB shell (อ่าน password อัตโนมัติ):</p>
+    <pre><code>lemp-db -e 'SHOW DATABASES;'</code></pre>
+
+    <h3>รีเซ็ตรหัสผ่าน</h3>
+    <p>ลบไฟล์ .env แล้วรัน bootstrap ใหม่:</p>
+    <pre><code>rm -f /opt/lemp/.env /root/lemp-credentials.txt /var/log/lemp-bootstrap.log
+/usr/local/sbin/lemp-bootstrap.sh</code></pre>
+
+    <div class="warning">
+      <strong>คำเตือน:</strong> การรีเซ็ตจะลบฐานข้อมูลเดิมทั้งหมด (เพราะ Docker volume ถูกลบ) — backup ก่อนทุกครั้ง
+    </div>
+  </section>
+  <!-- ===== /credentials ===== -->
+
+  <!-- ===== files ===== -->
+  <section id="files" class="section">
+    <h2>โครงสร้างไฟล์ & Config</h2>
+
+    <h3>Directory หลัก</h3>
+    <table class="config-table">
+      <tr><th>Path</th><th>หน้าที่</th><th>แก้ไขได้?</th></tr>
+      <tr><td><code>/opt/lemp/</code></td><td>Root directory ของ stack</td><td>✅ ได้</td></tr>
+      <tr><td><code>/opt/lemp/docker-compose.yml</code></td><td>Docker Compose services</td><td>✅ ได้</td></tr>
+      <tr><td><code>/opt/lemp/config/nginx/</code></td><td>Nginx config files</td><td>✅ ได้</td></tr>
+      <tr><td><code>/opt/lemp/config/php/</code></td><td>PHP settings</td><td>✅ ได้</td></tr>
+      <tr><td><code>/opt/lemp/images/</code></td><td>Dockerfiles สำหรับ build</td><td>✅ ได้</td></tr>
+      <tr><td><code>/opt/lemp/certs/</code></td><td>TLS certificates</td><td>✅ ได้</td></tr>
+    </table>
+
+    <h3>Config ที่แก้ไขได้</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>ตั้งค่าอะไร</th></tr>
+      <tr><td><code>/opt/lemp/config/nginx/default.conf</code></td><td>Nginx HTTP server block — root, PHP-FPM upstream, client_max_body_size</td></tr>
+      <tr><td><code>/opt/lemp/config/nginx/default-https.conf</code></td><td>Nginx HTTPS template — SSL cert paths, HTTP→HTTPS redirect</td></tr>
+      <tr><td><code>/opt/lemp/config/php/php.ini</code></td><td>PHP settings — memory_limit, upload_max_filesize, opcache</td></tr>
+      <tr><td><code>/opt/lemp/docker-compose.yml</code></td><td>Service definitions, ports, volumes, profiles</td></tr>
+    </table>
+
+    <h3>Runtime — ห้ามแก้ไข (สร้างอัตโนมัติ)</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>หน้าที่</th></tr>
+      <tr><td><code>/opt/lemp/.env</code></td><td>Environment variables (DB passwords) — สร้างตอน first boot</td></tr>
+      <tr><td><code>/root/lemp-credentials.txt</code></td><td>Credentials file — สร้างตอน first boot</td></tr>
+      <tr><td><code>/var/log/lemp-bootstrap.log</code></td><td>Bootstrap log</td></tr>
+    </table>
+
+    <h3>Data — ห้ามลบ</h3>
+    <table class="config-table">
+      <tr><th>Volume/Path</th><th>เก็บข้อมูลอะไร</th></tr>
+      <tr><td><code>db_data</code> (Docker volume)</td><td>MariaDB database files</td></tr>
+      <tr><td><code>www_data</code> (Docker volume)</td><td>PHP files (shared ระหว่าง Nginx + PHP-FPM)</td></tr>
+    </table>
+  </section>
+  <!-- ===== /files ===== -->
+
+  <!-- ===== commands ===== -->
+  <section id="commands" class="section">
+    <h2>คำสั่งพื้นฐาน</h2>
+
+    <p>LEMP Stack มี helper commands สั้นๆ ไว้ใช้ประจำ:</p>
+
+    <h3>ตรวจสอบสถานะ</h3>
+    <pre><code>lemp-status</code></pre>
+
+    <h3>ดู Log (50 บรรทัดล่าสุด)</h3>
+    <pre><code>lemp-logs</code></pre>
+    <p>ดู log เฉพาะ service:</p>
+    <pre><code>lemp-logs nginx
+lemp-logs php-fpm
+lemp-logs db</code></pre>
+
+    <h3>Restart ทั้งหมด</h3>
+    <pre><code>lemp-restart</code></pre>
+
+    <h3>Restart เฉพาะ service</h3>
+    <pre><code>lemp-restart nginx
+lemp-restart php-fpm</code></pre>
+
+    <h3>Shell เข้า PHP-FPM container</h3>
+    <pre><code>lemp-shell</code></pre>
+    <p>เมื่อเข้าไปแล้ว วาง PHP files ได้ที่ <code>/var/www/html/</code></p>
+
+    <h3>MariaDB shell</h3>
+    <pre><code>lemp-db
+lemp-db -e 'SHOW DATABASES;'
+lemp-db -e 'SELECT * FROM lempdb.some_table;'</code></pre>
+
+    <h3>คำสั่ง Docker โดยตรง (ถ้าต้องการ)</h3>
+    <pre><code>cd /opt/lemp
+docker compose ps
+docker compose logs -f
+docker compose down
+docker compose up -d</code></pre>
+  </section>
+  <!-- ===== /commands ===== -->
+
+  <!-- ===== profiles ===== -->
+  <section id="profiles" class="section">
+    <h2>HTTP / HTTPS Profiles</h2>
+
+    <p>LEMP Stack มี 2 profiles ให้เลือกใช้:</p>
+
+    <h3>HTTP Profile (ค่าเริ่มต้น)</h3>
+    <p>เปิด port 80 เท่านั้น — ใช้ตอน first boot โดยอัตโนมัติ</p>
+    <pre><code>docker compose --profile http up -d</code></pre>
+
+    <h3>HTTPS Profile</h3>
+    <p>เปิด port 80 + 443 — ต้องมี certificate files ก่อน</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>ชี้ DNS ไปที่ VM IP</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>วาง certificate files ที่ <code>/opt/lemp/certs/</code>:</p>
+        <pre><code>/opt/lemp/certs/fullchain.pem
+/opt/lemp/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>ตั้ง permission:</p>
+        <pre><code>chmod 644 /opt/lemp/certs/fullchain.pem
+chmod 600 /opt/lemp/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>เปลี่ยน profile เป็น HTTPS:</p>
+        <pre><code>cd /opt/lemp
+docker compose --profile http down
+docker compose --profile https up -d</code></pre>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>แนะนำ:</strong> ใช้ Let's Encrypt + certbot สำหรับ certificate ฟรี หรือใช้ self-signed cert สำหรับ dev
+    </div>
+  </section>
+  <!-- ===== /profiles ===== -->
+
+  <!-- ===== backup ===== -->
+  <section id="backup" class="section">
+    <h2>Backup & Restore</h2>
+
+    <h3>Backup Database</h3>
+    <pre><code>cd /opt/lemp
+docker compose exec -T db mariadb-dump -u root -p"$(grep 'Root DB Password' /root/lemp-credentials.txt | awk -F': ' '{print $2}')" lempdb > /root/lempdb-backup-$(date +%Y%m%d).sql</code></pre>
+
+    <h3>Backup Files/Config</h3>
+    <pre><code>tar czf /root/lemp-config-backup-$(date +%Y%m%d).tar.gz /opt/lemp/</code></pre>
+
+    <h3>Restore Database</h3>
+    <pre><code>cd /opt/lemp
+cat /root/lempdb-backup-20260712.sql | docker compose exec -T db mariadb -u root -p"$(grep 'Root DB Password' /root/lemp-credentials.txt | awk -F': ' '{print $2}')" lempdb</code></pre>
+
+    <h3>Restore Files/Config</h3>
+    <pre><code>cd /
+tar xzf /root/lemp-config-backup-20260712.tar.gz
+cd /opt/lemp && docker compose --profile http up -d</code></pre>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> Backup ก่อนอัปเกรดหรือรีเซ็ตรหัสผ่านเสมอ ข้อมูลใน Docker volume จะหายเมื่อรัน <code>docker compose down -v</code>
+    </div>
+  </section>
+  <!-- ===== /backup ===== -->
+
+  <!-- ===== upgrade ===== -->
+  <section id="upgrade" class="section">
+    <h2>การอัปเกรด</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>Backup ก่อนอัปเกรดเสมอ — ดูหัวข้อ <a href="#" class="goto-link" data-target="backup">Backup &amp; Restore</a></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>Pull Docker images ใหม่:</p>
+        <pre><code>cd /opt/lemp
+docker compose --profile http pull</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>Restart services ด้วย image ใหม่:</p>
+        <pre><code>cd /opt/lemp
+docker compose --profile http up -d</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>ตรวจสอบว่าเวอร์ชันอัปเกรดแล้ว:</p>
+        <pre><code>lemp-shell -c 'php -v | head -1'
+docker compose exec -T nginx nginx -v 2>&1
+docker compose exec -T db mariadb --version</code></pre>
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>ข้อควรระวัง:</strong> PHP 8.3 → 8.4 อาจมี breaking changes ตรวจสอบ compatibility ของโค้ดคุณก่อนอัปเกรด MariaDB minor version (11.4.x) ปลอดภัยกว่า major version (11.4 → 11.5)
+    </div>
+  </section>
+  <!-- ===== /upgrade ===== -->
+
+  <!-- ===== troubleshooting ===== -->
+  <section id="troubleshooting" class="section">
+    <h2>แก้ไขปัญหา</h2>
+
+    <h3>Nginx 403 Forbidden</h3>
+    <p><strong>สาเหตุ:</strong> ยังไม่มี index.php ใน <code>/var/www/html/</code></p>
+    <p><strong>แก้:</strong> สร้างไฟล์ PHP ผ่าน lemp-shell:</p>
+    <pre><code>lemp-shell
+echo "<?php phpinfo();" > /var/www/html/index.php
+exit</code></pre>
+
+    <h3>502 Bad Gateway</h3>
+    <p><strong>สาเหตุ:</strong> PHP-FPM container ไม่ทำงานหรือยังไม่พร้อม</p>
+    <p><strong>แก้:</strong> ตรวจสอบสถานะและ restart:</p>
+    <pre><code>lemp-status
+lemp-restart php-fpm</code></pre>
+
+    <h3>MariaDB connection refused</h3>
+    <p><strong>สาเหตุ:</strong> MariaDB ยังไม่พร้อม หรือ healthcheck ยังไม่ผ่าน</p>
+    <p><strong>แก้:</strong> รอสักครู่แล้วลองใหม่ หรือตรวจสอบ log:</p>
+    <pre><code>lemp-logs db</code></pre>
+
+    <h3>Container ไม่ restart หลัง docker kill</h3>
+    <p><strong>สาเหตุ:</strong> <code>docker kill</code> ไม่ trigger <code>unless-stopped</code> restart policy (โดย design ของ Docker)</p>
+    <p><strong>แก้:</strong> ใช้ <code>lemp-restart</code> แทน:</p>
+    <pre><code>lemp-restart</code></pre>
+
+    <h3>Bootstrap สร้าง secret ใหม่ทุกครั้ง</h3>
+    <p><strong>สาเหตุ:</strong> ไฟล์ <code>/opt/lemp/.env</code> ถูกลบ</p>
+    <p><strong>แก้:</strong> ปกติ — bootstrap จะ reuse .env ถ้ามี ถ้าต้องการ reset จริงๆ ให้ลบ .env + credentials + log แล้วรัน bootstrap ใหม่</p>
+
+    <h3>VM IP ไม่ตรงใน credentials</h3>
+    <p><strong>สาเหตุ:</strong> credentials ถูกสร้างตอน first boot — IP เปลี่ยนหลังจากนั้น</p>
+    <p><strong>แก้:</strong> ไม่มีผลต่อการทำงานของ stack แค่ credentials file แสดง IP เก่า ถ้าต้องการอัปเดต ให้ลบ .env + credentials + log แล้วรัน bootstrap ใหม่</p>
+  </section>
+  <!-- ===== /troubleshooting ===== -->
+
+  <!-- ====== NAV BUTTONS ====== -->
+  <div class="nav-buttons">
+    <button class="btn-prev" disabled>← ก่อนหน้า</button>
+    <span class="nav-indicator">1 / 9</span>
+    <button class="btn-next">ถัดไป →</button>
+  </div>
+
+  <!-- ====== VERSION FOOTER ====== -->
+  <footer class="content-footer">
+    <h4>ข้อมูล Image</h4>
+    <table class="version-table">
+      <tr><td>Image</td><td>LEMP Stack Dev Base Image</td></tr>
+      <tr><td>OS</td><td>Ubuntu 26.04 LTS</td></tr>
+      <tr><td>วันที่ Build</td><td>2026-07-12</td></tr>
+      <tr><td>Nginx</td><td>1.30.3 (stable)</td></tr>
+      <tr><td>PHP</td><td>8.3.32 (FPM)</td></tr>
+      <tr><td>MariaDB</td><td>11.4.12 (LTS)</td></tr>
+      <tr><td>Docker Engine</td><td>29.6.1</td></tr>
+      <tr><td>Docker Compose</td><td>v5.3.1</td></tr>
+    </table>
+  </footer>
+
+</main>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+(function() {
+  'use strict';
+
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.nav-link');
+  var navList = document.querySelector('.nav-list');
+  var searchInput = document.querySelector('.search');
+  var prevBtn = document.querySelector('.btn-prev');
+  var nextBtn = document.querySelector('.btn-next');
+  var indicator = document.querySelector('.nav-indicator');
+
+  var sectionIds = Array.from(sections).map(function(s) { return s.id; });
+  var currentIndex = 0;
+
+  function showSection(id) {
+    sections.forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.classList.add('active');
+
+    navLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+
+    currentIndex = sectionIds.indexOf(id);
+    if (currentIndex < 0) currentIndex = 0;
+    updateNavButtons();
+
+    if (history.pushState) {
+      history.pushState(null, '', '#' + id);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function updateNavButtons() {
+    prevBtn.disabled = (currentIndex <= 0);
+    nextBtn.disabled = (currentIndex >= sectionIds.length - 1);
+    indicator.textContent = (currentIndex + 1) + ' / ' + sectionIds.length;
+  }
+
+  function goPrev() {
+    if (currentIndex > 0) showSection(sectionIds[currentIndex - 1]);
+  }
+
+  function goNext() {
+    if (currentIndex < sectionIds.length - 1) showSection(sectionIds[currentIndex + 1]);
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = link.getAttribute('href').slice(1);
+      showSection(id);
+    });
+  });
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  document.querySelectorAll('.goto-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = link.getAttribute('data-target');
+      if (targetId) showSection(targetId);
+    });
+  });
+
+  window.addEventListener('popstate', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash && sectionIds.indexOf(hash) >= 0) {
+      showSection(hash);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+  });
+
+  searchInput.addEventListener('input', function() {
+    var q = searchInput.value.toLowerCase();
+    var items = navList.querySelectorAll('li');
+    items.forEach(function(li) {
+      var text = li.textContent.toLowerCase();
+      li.style.display = text.indexOf(q) >= 0 ? '' : 'none';
+    });
+  });
+
+  var hash = window.location.hash.slice(1);
+  if (hash && sectionIds.indexOf(hash) >= 0) {
+    showSection(hash);
+  } else {
+    updateNavButtons();
+  }
+
+})();
+</script>
+
+</body>
+</html>

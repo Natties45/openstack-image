@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# monitoring-restart — Restart monitoring containers
+# Usage: sudo monitoring-restart [container-name]
+#   Without argument: restart all monitoring containers
+#   With container: restart specific container (e.g., grafana, prometheus)
+
+APP_DIR=/opt/monitoring
+
+if [ $# -ge 1 ]; then
+  docker compose -f "$APP_DIR/docker-compose.yml" restart "$@"
+else
+  docker compose -f "$APP_DIR/docker-compose.yml" restart
+fi

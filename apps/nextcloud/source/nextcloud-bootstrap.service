@@ -1,0 +1,15 @@
+[Unit]
+Description=Nextcloud Docker Bootstrap
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+ConditionPathExists=/opt/nextcloud/docker-compose.yml
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/nextcloud-bootstrap.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

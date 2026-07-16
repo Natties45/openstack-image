@@ -1,0 +1,5 @@
+- targets:
+    - http://nginx/
+  labels:
+    name: grafana-http
+    role: self-check

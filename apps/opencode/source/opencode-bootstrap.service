@@ -1,0 +1,15 @@
+[Unit]
+Description=OpenCode First-Boot Bootstrap
+After=network.target network-online.target
+Wants=network-online.target
+ConditionPathExists=!/etc/opencode/.bootstrapped
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/opencode-bootstrap.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

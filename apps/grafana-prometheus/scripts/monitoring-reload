@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Run with sudo: sudo monitoring-reload" >&2
+  exit 1
+fi
+
+echo "Validating Prometheus configuration..."
+if ! docker exec prometheus promtool check config /etc/prometheus/prometheus.yml; then
+  echo "Error: Prometheus configuration validation failed." >&2
+  exit 1
+fi
+
+echo "Validating Alertmanager configuration..."
+if ! docker exec alertmanager amtool check-config /etc/alertmanager/alertmanager.yml; then
+  echo "Error: Alertmanager configuration validation failed." >&2
+  exit 1
+fi
+
+curl -fsS -X POST http://127.0.0.1:9090/-/reload >/dev/null
+curl -fsS -X POST http://127.0.0.1:9093/-/reload >/dev/null
+echo "Prometheus and Alertmanager config reloaded"

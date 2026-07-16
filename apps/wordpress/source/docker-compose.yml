@@ -1,0 +1,100 @@
+services:
+  db:
+    build:
+      context: ./images/db
+    image: wordpress-local-mariadb:11.4.8-tools
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  wordpress:
+    build:
+      context: ./images/wordpress
+    image: wordpress-local-fpm:7.0.0-php8.3-tools
+    volumes:
+      - wp_data:/var/www/html
+      - ./php/wordpress.ini:/usr/local/etc/php/conf.d/zz-wordpress.ini:ro
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./images/nginx
+    image: wordpress-local-nginx:1.30.3-tools
+    profiles:
+      - http
+    ports:
+      - "80:80"
+    volumes:
+      - wp_data:/var/www/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - wordpress
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  nginx-https:
+    build:
+      context: ./images/nginx
+    image: wordpress-local-nginx:1.30.3-tools
+    profiles:
+      - https
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wp_data:/var/www/html:ro
+      - ./nginx/default-https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro
+      - ./certs/privkey.pem:/etc/nginx/certs/privkey.pem:ro
+    depends_on:
+      - wordpress
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  wp-cli:
+    build:
+      context: ./images/wp-cli
+    image: wordpress-local-cli:2.12.0-php8.3-tools
+    profiles:
+      - tools
+    volumes:
+      - wp_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+      WORDPRESS_DB_USER: ${MARIADB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["wp"]
+
+volumes:
+  db_data:
+  wp_data:

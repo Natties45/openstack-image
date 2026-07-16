@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+cd /opt/wordpress
+if [ ! -f .previous-image ]; then
+  echo "No rollback file found: /opt/wordpress/.previous-image" >&2
+  exit 1
+fi
+cp .previous-image docker-compose.yml
+if [ -d .previous-images ]; then
+  rm -rf images
+  cp -a .previous-images images
+fi
+docker compose --profile http --profile tools build
+docker compose --profile http up -d
+echo "Rollback complete."

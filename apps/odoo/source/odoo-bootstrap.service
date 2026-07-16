@@ -1,0 +1,14 @@
+[Unit]
+Description=Odoo first boot bootstrap
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/odoo-bootstrap.sh
+RemainAfterExit=yes
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

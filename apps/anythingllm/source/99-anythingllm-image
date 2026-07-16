@@ -1,0 +1,10 @@
+#!/bin/bash
+echo ""
+echo "  AnythingLLM Docker — Ubuntu 26.04"
+echo "  =================================="
+echo "  Setup:    http://<YOUR-VM-IP>"
+echo "  Creds:    /root/anythingllm-credentials.txt"
+echo "  Dir:      /opt/anythingllm"
+echo "  Manage:   cd /opt/anythingllm && docker compose ps"
+echo "  Reset PW: anythingllm-reset-password"
+echo ""

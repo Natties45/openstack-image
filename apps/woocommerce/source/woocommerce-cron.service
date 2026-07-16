@@ -1,0 +1,8 @@
+[Unit]
+Description=WooCommerce WP-Cron and Action Scheduler runner
+After=docker.service woocommerce-bootstrap.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/woocommerce-cron.sh

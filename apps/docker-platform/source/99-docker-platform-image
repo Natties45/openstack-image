@@ -1,0 +1,15 @@
+#!/bin/sh
+cat << 'EOF'
+
+Docker Platform Image
+---------------------
+Portainer CE: https://<VM-IP>:9443
+Nginx Proxy Manager: http://<VM-IP>:81
+
+Read credentials:
+  cat /root/docker-platform-credentials.txt
+
+Docs:
+  /root/README-docker-platform-image.txt
+
+EOF

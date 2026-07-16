@@ -1,0 +1,19 @@
+#!/bin/bash
+echo ""
+echo "  WordPress Customer Image — Ubuntu 26.04"
+echo "  ========================================="
+echo "  Access:   http://<YOUR-VM-IP>"
+echo "  Setup:    Complete the WordPress browser wizard"
+echo "  Creds:    /root/wordpress-credentials.txt (database only)"
+echo "  Config:   /opt/wordpress"
+echo "  Status:   wordpress-status"
+echo "  Logs:     wordpress-logs"
+echo "  Restart:  wordpress-restart"
+echo "  WP-CLI:   wp-cli --info"
+echo "  URL Fix:  wp-cli option update siteurl <url> && wp-cli option update home <url>"
+if [ -f /opt/wordpress/.env ] && grep -q "^DOMAIN=" /opt/wordpress/.env 2>/dev/null; then
+    DOMAIN=$(grep "^DOMAIN=" /opt/wordpress/.env | cut -d= -f2)
+    echo "  HTTPS:    https://${DOMAIN}"
+fi
+echo "  Docs:     cat /root/README-wordpress-image.txt"
+echo ""

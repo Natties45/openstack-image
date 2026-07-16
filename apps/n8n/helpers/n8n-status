@@ -1,0 +1,3 @@
+#!/bin/bash
+# n8n-status — show n8n container status
+cd /opt/n8n && docker compose ps

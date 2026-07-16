@@ -1,0 +1,6 @@
+services:
+  nginx-demo:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"

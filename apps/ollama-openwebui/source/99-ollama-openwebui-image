@@ -1,0 +1,14 @@
+#!/bin/sh
+cat << 'EOF'
+
+Ollama + Open WebUI Image
+--------------------------
+Open WebUI: http://<VM-IP>:3000
+
+Read docs:
+  cat /root/README-ollama-openwebui-image.txt
+
+Manage models:
+  docker exec ollama ollama list
+
+EOF

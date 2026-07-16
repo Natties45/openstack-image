@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nextcloud — คู่มือการใช้งาน</title>
+<style>
+:root {
+  --sidebar-w: 260px;
+  --bg: #ffffff;
+  --bg-sidebar: #f8f9fa;
+  --bg-code: #f0f0f0;
+  --text: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-heading: #111827;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --active-bg: #eff6ff;
+  --active-border: #2563eb;
+  --border: #e5e7eb;
+  --radius: 6px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 20px 20px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-icon { font-size: 22px; }
+
+.app-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search {
+  margin: 16px 16px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.search::placeholder { color: var(--text-muted); }
+
+.nav-list {
+  list-style: none;
+  padding: 4px 0;
+  flex: 1;
+}
+
+.nav-list li { margin: 0; }
+
+.nav-link {
+  display: block;
+  padding: 8px 20px 8px 17px;
+  border-left: 3px solid transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--text-heading); }
+
+.nav-link.active {
+  background: var(--active-bg);
+  border-left-color: var(--active-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-version {
+  padding: 16px 20px;
+  font-size: 12px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 820px;
+  padding: 48px 56px 80px;
+  min-height: 100vh;
+}
+
+.content-header {
+  margin-bottom: 36px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.content-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.section { display: none; }
+
+.section.active { display: block; }
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+
+.section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 28px;
+  margin-bottom: 8px;
+}
+
+.section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.section p {
+  margin-bottom: 14px;
+}
+
+.section ul, .section ol {
+  padding-left: 24px;
+  margin-bottom: 14px;
+}
+
+.section li { margin-bottom: 6px; }
+
+.section li > ul, .section li > ol { margin-top: 4px; margin-bottom: 0; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #1e293b;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  background: var(--bg-code);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.step-body { flex: 1; }
+
+.step-body p { margin-bottom: 6px; }
+
+.note, .warning {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.note {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  color: #1e40af;
+}
+
+.warning {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+.note strong, .warning strong { font-weight: 600; }
+
+.config-table, .version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.config-table th, .config-table td,
+.version-table th, .version-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.config-table th {
+  background: var(--bg-sidebar);
+  font-weight: 600;
+  color: var(--text-heading);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.config-table td:first-child,
+.version-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+.config-table tr:hover { background: #fafafa; }
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-prev, .btn-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.btn-prev:hover:not(:disabled),
+.btn-next:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-prev:disabled, .btn-next:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-indicator {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.content-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.content-footer h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-table { max-width: 400px; }
+
+.version-table td { padding: 6px 14px; border: none; font-size: 13px; }
+
+.version-table td:first-child { color: var(--text-muted); width: 120px; }
+
+@media print {
+  .sidebar, .nav-buttons, .search { display: none !important; }
+  .content { margin-left: 0; max-width: none; padding: 20px 0; }
+  .section { display: block !important; page-break-after: always; margin-bottom: 30px; }
+  .section:last-child { page-break-after: auto; }
+  .content-header { border-bottom: 1px solid #000; }
+  .content-footer { border-top: 1px solid #000; }
+  pre { border: 1px solid #ccc; background: #f5f5f5; }
+  body { color: #000; font-size: 13px; }
+}
+
+@media (max-width: 900px) {
+  .content { padding: 32px 24px; }
+}
+
+@media (max-width: 700px) {
+  :root { --sidebar-w: 220px; }
+  .content { padding: 24px 16px 60px; }
+  .content-header h1 { font-size: 22px; }
+  .section h2 { font-size: 19px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <span class="app-icon">☁️</span>
+    <span class="app-name">Nextcloud</span>
+  </div>
+
+  <input type="search" class="search" placeholder="ค้นหาหัวข้อ..." aria-label="ค้นหาหัวข้อ">
+
+  <ul class="nav-list">
+    <li><a href="#overview" class="nav-link active">ภาพรวม</a></li>
+    <li><a href="#access" class="nav-link">การเข้าใช้งาน</a></li>
+    <li><a href="#credentials" class="nav-link">รหัสผ่าน</a></li>
+    <li><a href="#files" class="nav-link">โครงสร้างไฟล์</a></li>
+    <li><a href="#commands" class="nav-link">คำสั่งพื้นฐาน</a></li>
+    <li><a href="#scripts" class="nav-link">คำสั่ง Helper</a></li>
+    <li><a href="#profiles" class="nav-link">การสลับ HTTP/HTTPS</a></li>
+    <li><a href="#https" class="nav-link">การเปิด HTTPS</a></li>
+    <li><a href="#backup" class="nav-link">Backup & Restore</a></li>
+    <li><a href="#upgrade" class="nav-link">การอัปเกรด</a></li>
+  </ul>
+
+  <div class="sidebar-version">
+    Nextcloud image &middot; 30.0.17
+  </div>
+</nav>
+
+<main class="content">
+
+  <header class="content-header">
+    <h1>Nextcloud — คู่มือการใช้งาน</h1>
+    <p class="subtitle">ระบบแชร์ไฟล์และทำงานร่วมกันแบบ Private Cloud — พร้อมใช้งานทันทีหลังจากสร้าง VM</p>
+  </header>
+
+  <section id="overview" class="section active">
+    <h2>ภาพรวม</h2>
+    <p>Nextcloud คือแพลตฟอร์มแชร์ไฟล์และทำงานร่วมกันแบบ open-source ติดตั้งบน VM ของคุณเอง ข้อมูลทั้งหมดอยู่บนเซิร์ฟเวอร์ของคุณ ไม่ได้ส่งไปยังบริษัทอื่น</p>
+    <p>Image นี้ถูกออกแบบให้สร้าง VM แล้วเปิด browser เข้าใช้งานได้ทันที — ไม่ต้องตั้งค่าอะไรเพิ่ม</p>
+
+    <h3>Stack ที่ใช้</h3>
+    <ul>
+      <li><strong>Nextcloud 30.0</strong> — ตัวแอปพลิเคชันหลัก (PHP 8.4 + Apache)</li>
+      <li><strong>PostgreSQL 16.9</strong> — ฐานข้อมูล</li>
+      <li><strong>Redis 7.4</strong> — ระบบ cache และ file locking (เพิ่มความเร็ว)</li>
+      <li><strong>Nginx 1.27</strong> — reverse proxy (จัดการ SSL และเชื่อมต่อภายนอก)</li>
+      <li><strong>Docker Compose</strong> — จัดการ containers ทั้ง 4 ตัว</li>
+    </ul>
+
+    <h3>คุณสมบัติเด่น</h3>
+    <ul>
+      <li>สร้าง VM → เปิด browser → ใช้งานได้เลย — ไม่ต้องตั้งค่า</li>
+      <li>IP เปลี่ยนอัตโนมัติ — ทดสอบจริงหลัง shutoff/change IP แล้วเข้าใช้งานได้ทันที</li>
+      <li>Redis cache + file locking — ทำงานเร็วขึ้น</li>
+      <li>System cron รันทุก 5 นาที — งานพื้นหลังไม่ค้าง</li>
+      <li>Upgrade/Rollback ด้วยคำสั่งเดียว — ไม่เสียข้อมูล</li>
+    </ul>
+  </section>
+
+  <section id="access" class="section">
+    <h2>การเข้าใช้งาน</h2>
+
+    <h3>URL</h3>
+    <table class="config-table">
+      <tr><th>Service</th><th>URL</th><th>หมายเหตุ</th></tr>
+      <tr><td>Nextcloud</td><td><code>http://&lt;VM-IP&gt;/</code></td><td>หน้า login</td></tr>
+      <tr><td>WebDAV</td><td><code>http://&lt;VM-IP&gt;/remote.php/dav/files/&lt;user&gt;/</code></td><td>เชื่อมต่อจาก PC/Mobile</td></tr>
+    </table>
+
+    <h3>Security Group (Firewall)</h3>
+    <p>เปิด port ต่อไปนี้ที่ OpenStack Security Group เพื่อให้เข้าใช้งาน Nextcloud ได้:</p>
+    <table class="config-table">
+      <tr><th>Port</th><th>Protocol</th><th>จำเป็น?</th><th>用途</th></tr>
+      <tr><td>22</td><td>TCP</td><td>✅ จำเป็น</td><td>SSH — สำหรับผู้ดูแลระบบเข้า VM</td></tr>
+      <tr><td>80</td><td>TCP</td><td>✅ จำเป็น</td><td>HTTP — เปิดเว็บ Nextcloud (ต้องมีอย่างน้อย 1 port)</td></tr>
+      <tr><td>443</td><td>TCP</td><td>⚠️ แล้วแต่</td><td>HTTPS — ถ้าต้องการเปิด SSL (เพิ่มเติมจาก port 80)</td></tr>
+    </table>
+    <div class="note">
+      <strong>หมายเหตุ:</strong> container ports (PostgreSQL 5432, Redis 6379, Apache 80) อยู่ใน Docker internal network ไม่ต้องเปิดใน Security Group
+    </div>
+
+    <h3>ขั้นตอนเข้าใช้งานครั้งแรก</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>เปิด browser ไปที่ <code>http://&lt;VM-IP&gt;/</code></p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>จะเห็นหน้า Login — ใช้ username <code>admin</code> และ password จากไฟล์ <code>/root/nextcloud-credentials.txt</code> (ดูวิธีในหัวข้อ <a href="#" class="goto-link" data-target="credentials">รหัสผ่าน</a>)</p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>เมื่อ login สำเร็จ จะเข้าสู่หน้า Dashboard — พร้อมใช้งาน</p></div>
+    </div>
+
+    <div class="note">
+      <strong>แนะนำ:</strong> เปลี่ยนรหัสผ่าน admin หลัง login ครั้งแรก ไปที่ Settings → Security → Devices & sessions → Password
+    </div>
+
+    <div class="note">
+      <strong>ตรวจสอบจริง:</strong> image นี้ทดสอบแล้วทั้ง boot ใหม่จาก image และกรณี shutoff + เปลี่ยน public IP โดย bootstrap จะเติม trusted_domains ใหม่อัตโนมัติ ทำให้เปิด <code>http://&lt;VM-IP&gt;/</code> ได้ทันทีโดยไม่ต้องแก้ config เอง
+    </div>
+  </section>
+
+  <section id="credentials" class="section">
+    <h2>รหัสผ่าน & Credentials</h2>
+
+    <h3>ดูรหัสผ่าน</h3>
+    <p>รหัสผ่านทั้งหมดถูกสุ่มตอนสร้าง VM ครั้งแรก และเก็บไว้ในไฟล์:</p>
+    <pre><code>cat /root/nextcloud-credentials.txt</code></pre>
+    <p>ไฟล์นี้ประกอบด้วย:</p>
+    <ul>
+      <li><strong>Nextcloud Admin</strong> — username: <code>admin</code>, password สำหรับ login เว็บ</li>
+      <li><strong>PostgreSQL Database</strong> — สำหรับเชื่อมต่อฐานข้อมูลโดยตรง</li>
+      <li><strong>Redis</strong> — password สำหรับ Redis cache</li>
+    </ul>
+
+    <h3>รีเซ็ตรหัสผ่าน admin</h3>
+    <p>ใช้คำสั่ง <code>nc-occ</code> เพื่อรีเซ็ตรหัสผ่าน:</p>
+    <pre><code>nc-occ user:resetpassword admin</code></pre>
+    <p>ระบบจะถามรหัสผ่านใหม่ — ใส่รหัสผ่านที่ต้องการ</p>
+
+    <h3>รีเซ็ตรหัสผ่าน PostgreSQL</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose exec db psql -U nextcloud -c "ALTER USER nextcloud PASSWORD 'รหัสผ่านใหม่';"</code></pre>
+    <p>จากนั้นอัปเดตไฟล์ <code>/opt/nextcloud/.env</code> ด้วยรหัสผ่านใหม่</p>
+
+    <div class="warning">
+      <strong>คำเตือน:</strong> ไฟล์ <code>/opt/nextcloud/.env</code> และ <code>/root/nextcloud-credentials.txt</code> มีรหัสผ่านทั้งหมด — ห้ามแชร์ ห้าม dump ลง chat หรือ repo
+    </div>
+  </section>
+
+  <section id="files" class="section">
+    <h2>โครงสร้างไฟล์ & Config</h2>
+
+    <h3>Directory หลัก</h3>
+    <table class="config-table">
+      <tr><th>Path</th><th>หน้าที่</th><th>แก้ไขได้?</th></tr>
+      <tr><td><code>/opt/nextcloud/</code></td><td>Compose, config, nginx, certs</td><td>✅ ได้</td></tr>
+      <tr><td><code>/var/lib/nextcloud/</code></td><td>Runtime data จริง (app, db, redis)</td><td>❌ ห้ามแก้</td></tr>
+      <tr><td><code>/etc/nextcloud-image/</code></td><td>Metadata ของ image (ไม่มี secret)</td><td>✅ ได้</td></tr>
+      <tr><td><code>/usr/local/bin/nc-*</code></td><td>Helper scripts</td><td>✅ ได้</td></tr>
+    </table>
+
+    <h3>Config ที่แก้ไขได้</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>ตั้งค่าอะไร</th></tr>
+      <tr><td><code>/opt/nextcloud/nginx/default.conf</code></td><td>HTTP Nginx — ปรับ <code>client_max_body_size</code>, timeout</td></tr>
+      <tr><td><code>/opt/nextcloud/nginx/default-https.conf</code></td><td>HTTPS Nginx — ปรับ SSL protocol, cipher</td></tr>
+      <tr><td><code>/opt/nextcloud/docker-compose.yml</code></td><td>Service definitions — เปลี่ยน image tag ตอน upgrade</td></tr>
+      <tr><td><code>/opt/nextcloud/.env</code></td><td>Environment variables — trusted_domains, passwords</td></tr>
+    </table>
+
+    <div class="note">
+      <strong>หมายเหตุ:</strong> ถ้า VM ได้ IP ใหม่หลัง stop/start หรือย้ายเครื่อง ให้ตรวจสอบด้วย <code>nc-occ config:system:get trusted_domains</code> จะเห็นว่า bootstrap เติม IP ใหม่เพิ่มให้อัตโนมัติ โดยไม่ลบ IP เก่าหรือ domain ที่คุณเพิ่มเอง
+    </div>
+
+    <h3>Runtime — ห้ามแก้ไข</h3>
+    <table class="config-table">
+      <tr><th>ไฟล์</th><th>หน้าที่</th></tr>
+      <tr><td><code>/opt/nextcloud/.env</code></td><td>Environment variables (มี password — ห้ามลบ)</td></tr>
+      <tr><td><code>/root/nextcloud-credentials.txt</code></td><td>Credentials ของ VM นี้</td></tr>
+      <tr><td><code>/var/log/nextcloud-bootstrap.log</code></td><td>Log การ bootstrap ครั้งแรก</td></tr>
+    </table>
+
+    <h3>Data — ห้ามลบ</h3>
+    <table class="config-table">
+      <tr><th>Volume/Path</th><th>เก็บข้อมูลอะไร</th></tr>
+      <tr><td><code>/var/lib/nextcloud/app</code></td><td>ไฟล์ผู้ใช้ทั้งหมด + Nextcloud app data</td></tr>
+      <tr><td><code>/var/lib/nextcloud/db</code></td><td>PostgreSQL database</td></tr>
+      <tr><td><code>/var/lib/nextcloud/redis</code></td><td>Redis cache data</td></tr>
+    </table>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> ห้ามลบ <code>/var/lib/nextcloud</code> — เป็นข้อมูลจริงทั้งหมด ถ้าต้องการย้ายไป attached volume ให้ดูคำแนะนำใน <code>/root/README-nextcloud-image.txt</code>
+    </div>
+  </section>
+
+  <section id="commands" class="section">
+    <h2>คำสั่งพื้นฐาน</h2>
+
+    <h3>ตรวจสอบสถานะ</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose ps</code></pre>
+
+    <h3>ดู Log</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose logs -f</code></pre>
+
+    <h3>ดู Log เฉพาะ service</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose logs -f nextcloud   # ดู log Nextcloud
+docker compose logs -f db          # ดู log PostgreSQL
+docker compose logs -f nginx       # ดู log Nginx</code></pre>
+
+    <h3>Restart ทั้งหมด</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose --profile http restart</code></pre>
+
+    <h3>Restart เฉพาะ service</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose --profile http restart nextcloud</code></pre>
+
+    <h3>Stop ทั้งหมด</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose --profile http down</code></pre>
+
+    <h3>Start ใหม่</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose --profile http up -d</code></pre>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> ทุกคำสั่ง <code>docker compose</code> ต้องระบุ <code>--profile http</code> เสมอ — เพราะ Nginx อยู่ใน profile <code>http</code> ถ้าไม่ระบุ profile จะไม่เห็น Nginx และ restart/down จะไม่ทำงานกับ Nginx
+    </div>
+  </section>
+
+  <section id="scripts" class="section">
+    <h2>คำสั่ง Helper</h2>
+    <p>Image นี้มีคำสั่งลัดสำหรับงานที่ใช้บ่อย — ใช้ได้ทุกที่ ไม่ต้อง <code>cd</code> เข้า <code>/opt/nextcloud</code></p>
+
+    <h3>รายการคำสั่ง</h3>
+    <table class="config-table">
+      <tr><th>คำสั่ง</th><th>ทำอะไร</th><th>ตัวอย่าง</th></tr>
+      <tr><td><code>nc-occ</code></td><td>รัน Nextcloud occ command</td><td><code>nc-occ user:list</code></td></tr>
+      <tr><td><code>nc-status</code></td><td>ตรวจสอบ container status</td><td><code>nc-status</code></td></tr>
+      <tr><td><code>nc-logs</code></td><td>ดู log 50 บรรทัดล่าง</td><td><code>nc-logs nextcloud</code></td></tr>
+      <tr><td><code>nc-restart</code></td><td>Restart ทั้ง stack (HTTP mode)</td><td><code>nc-restart</code></td></tr>
+      <tr><td><code>nc-upgrade</code></td><td>อัปเกรด Nextcloud (บันทึก version ก่อน)</td><td><code>nc-upgrade</code></td></tr>
+      <tr><td><code>nc-rollback</code></td><td>ย้อนกลับ version ก่อนหน้า</td><td><code>nc-rollback</code></td></tr>
+    </table>
+
+    <h3>ตัวอย่างการใช้งาน</h3>
+    <pre><code># ตรวจสอบสถานะ Nextcloud
+nc-occ status
+
+# ดู user ทั้งหมด
+nc-occ user:list
+
+# ดู trusted domains
+nc-occ config:system:get trusted_domains
+
+# ตรวจสอบ container
+nc-status
+
+# ดู log ของ Nextcloud
+nc-logs nextcloud
+
+# Restart ทั้ง stack
+nc-restart
+
+# อัปเกรด
+nc-upgrade
+
+# ย้อนกลับ (ถ้า upgrade แล้วมีปัญหา)
+nc-rollback</code></pre>
+
+    <div class="note">
+      <strong>หมายเหตุ:</strong> <code>nc-restart</code> ใช้ <code>--profile http</code> เสมอ ถ้าคุณเปิด HTTPS อยู่ ให้ใช้ <code>docker compose --profile https restart</code> แทน
+    </div>
+  </section>
+
+  <section id="profiles" class="section">
+    <h2>การสลับ HTTP/HTTPS</h2>
+    <p>Nextcloud image นี้ใช้ Docker Compose profiles เพื่อแยกโหมด HTTP และ HTTPS — คุณสามารถสลับไปมาได้โดยไม่ต้องแก้ config</p>
+
+    <h3>Profile ที่มี</h3>
+    <table class="config-table">
+      <tr><th>Profile</th><th>Port</th><th>เมื่อไหร่</th></tr>
+      <tr><td><code>http</code> (default)</td><td>80</td><td>ใช้งานครั้งแรก, ทดสอบ, หรือยังไม่มี domain</td></tr>
+      <tr><td><code>https</code></td><td>80 + 443</td><td>มี domain + certificate แล้ว</td></tr>
+    </table>
+
+    <h3>เปิดโหมด HTTP (default)</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose --profile http up -d</code></pre>
+
+    <h3>เปิดโหมด HTTPS</h3>
+    <p>ดูขั้นตอนในหัวข้อ <a href="#" class="goto-link" data-target="https">การเปิด HTTPS</a></p>
+
+    <h3>สลับจาก HTTP → HTTPS</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>วาง certificate ที่ <code>/opt/nextcloud/certs/</code></p></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>Stop Nginx HTTP:</p>
+      <pre><code>cd /opt/nextcloud
+docker compose --profile http stop nginx</code></pre></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><p>Start HTTPS profile:</p>
+      <pre><code>docker compose --profile https up -d</code></pre></div>
+    </div>
+
+    <h3>สลับจาก HTTPS → HTTP</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><p>Stop HTTPS Nginx:</p>
+      <pre><code>cd /opt/nextcloud
+docker compose --profile https stop nginx-https</code></pre></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><p>Start HTTP profile:</p>
+      <pre><code>docker compose --profile http up -d</code></pre></div>
+    </div>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> port 80 ถูกใช้โดยทั้ง Nginx HTTP และ Nginx HTTPS — ไม่สามารถรันทั้ง 2 profile พร้อมกันได้ ต้อง stop profile เก่าก่อน start profile ใหม่เสมอ
+    </div>
+  </section>
+
+  <section id="https" class="section">
+    <h2>การเปิด HTTPS</h2>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>ชี้ DNS ไปที่ VM floating IP</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p>วาง certificate files ที่ <code>/opt/nextcloud/certs/</code>:</p>
+        <pre><code>/opt/nextcloud/certs/fullchain.pem
+/opt/nextcloud/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p>ตั้ง permission:</p>
+        <pre><code>chmod 644 /opt/nextcloud/certs/fullchain.pem
+chmod 600 /opt/nextcloud/certs/privkey.pem</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p>เปิด HTTPS profile (ดูหัวข้อ <a href="#" class="goto-link" data-target="profiles">การสลับ HTTP/HTTPS</a>):</p>
+        <pre><code>cd /opt/nextcloud
+docker compose --profile https up -d</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p>ตรวจสอบ:</p>
+        <pre><code>curl -sI https://yourdomain.com | head -1
+# ต้องได้: HTTP/2 200</code></pre>
+      </div>
+    </div>
+
+    <h3>ขอ certificate ฟรีด้วย Let's Encrypt</h3>
+    <pre><code># ติดตั้ง certbot
+apt install certbot
+
+# ขอ certificate (ต้องมี DNS ชี้มาที่ IP แล้ว)
+certbot certonly --manual -d yourdomain.com --preferred-challenges dns
+
+# จะได้ไฟล์:
+#   /etc/letsencrypt/live/yourdomain.com/fullchain.pem
+#   /etc/letsencrypt/live/yourdomain.com/privkey.pem
+
+# copy ไปวาง
+cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem /opt/nextcloud/certs/
+cp /etc/letsencrypt/live/yourdomain.com/privkey.pem /opt/nextcloud/certs/</code></pre>
+
+    <div class="note">
+      <strong>แนะนำ:</strong> ใช้ Let's Encrypt สำหรับ certificate ฟรี อายุ 90 วัน ต้อง renew ทุก 3 เดือน
+    </div>
+  </section>
+
+  <section id="backup" class="section">
+    <h2>Backup & Restore</h2>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> คำสั่ง backup ด้านล่างนี้เป็นการ backup ข้อมูลทั้งหมด (DB + files) — ควรทำก่อน upgrade หรือก่อนการเปลี่ยนแปลงสำคัญ
+    </div>
+
+    <h3>Backup Database</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose exec db pg_dump -U nextcloud nextcloud > nc-db-backup-$(date +%Y%m%d).sql</code></pre>
+
+    <h3>Backup Files + Config</h3>
+    <pre><code># Backup runtime data ทั้งหมด
+tar czf nc-data-backup-$(date +%Y%m%d).tar.gz -C /var/lib nextcloud
+
+# Backup config/control files
+tar czf nc-config-backup-$(date +%Y%m%d).tar.gz -C /opt nextcloud</code></pre>
+
+    <h3>Restore Database</h3>
+    <pre><code>cd /opt/nextcloud
+docker compose exec -T db psql -U nextcloud nextcloud < nc-db-backup-YYYYMMDD.sql</code></pre>
+
+    <h3>Restore Files</h3>
+    <pre><code>tar xzf nc-data-backup-YYYYMMDD.tar.gz -C /var/lib
+docker compose --profile http restart</code></pre>
+
+    <div class="warning">
+      <strong>สำคัญ:</strong> การ restore ควรทำในขณะที่ Nextcloud อยู่ใน maintenance mode เสมอ:
+      <pre><code>nc-occ maintenance:mode --on
+# ... ทำ restore ...
+nc-occ maintenance:mode --off</code></pre>
+    </div>
+  </section>
+
+  <section id="upgrade" class="section">
+    <h2>การอัปเกรด</h2>
+    <p>Image นี้มีคำสั่ง <code>nc-upgrade</code> และ <code>nc-rollback</code> สำหรับอัปเกรดและย้อนกลับ — ไม่ต้อง backup ข้อมูล เพราะ rollback แค่เปลี่ยน image tag ไม่ได้แตะ data volume</p>
+
+    <h3>อัปเกรด (แนะนำ)</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>รันคำสั่งอัปเกรด:</p>
+        <pre><code>nc-upgrade</code></pre>
+        <p>คำสั่งนี้จะ:</p>
+        <ul>
+          <li>บันทึก image tag ปัจจุบันไปที่ <code>/opt/nextcloud/.previous-image</code></li>
+          <li>เปิด maintenance mode</li>
+          <li>pull image ใหม่</li>
+          <li>restart containers</li>
+          <li>รอให้ Nextcloud พร้อม</li>
+          <li>ปิด maintenance mode</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>ย้อนกลับ (Rollback)</h3>
+    <p>ถ้าอัปเกรดแล้วมีปัญหา:</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p>รันคำสั่ง rollback:</p>
+        <pre><code>nc-rollback</code></pre>
+        <p>คำสั่งนี้จะ:</p>
+        <ul>
+          <li>อ่าน image tag เดิมจาก <code>/opt/nextcloud/.previous-image</code></li>
+          <li>เปิด maintenance mode</li>
+          <li>pull image เดิม</li>
+          <li>แก้ docker-compose.yml กลับเป็น tag เดิม</li>
+          <li>restart containers</li>
+          <li>ปิด maintenance mode</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>อัปเกรดด้วยตนเอง (Manual)</h3>
+    <pre><code>cd /opt/nextcloud
+
+# เปิด maintenance mode
+nc-occ maintenance:mode --on
+
+# pull image ใหม่
+docker compose pull nextcloud
+
+# restart
+docker compose up -d
+
+# ปิด maintenance mode
+nc-occ maintenance:mode --off</code></pre>
+
+    <div class="warning">
+      <strong>ข้อควรระวัง:</strong>
+      <ul>
+        <li>Nextcloud ข้าม major version ไม่ได้ — ต้อง upgrade ทีละ version (เช่น 29→30→31)</li>
+        <li>ตรวจสอบ compatibility ก่อน upgrade ทุกครั้งที่ <a href="https://docs.nextcloud.com" target="_blank">docs.nextcloud.com</a></li>
+        <li>ถ้า rollback ไม่มีไฟล์ <code>.previous-image</code> — rollback ไม่ได้ (กรณีนี้ต้อง restore จาก backup)</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="nav-buttons">
+    <button class="btn-prev" disabled>← ก่อนหน้า</button>
+    <span class="nav-indicator">1 / 10</span>
+    <button class="btn-next">ถัดไป →</button>
+  </div>
+
+  <footer class="content-footer">
+    <h4>ข้อมูล Image</h4>
+    <table class="version-table">
+      <tr><td>Image</td><td>Nextcloud 30.0.17</td></tr>
+      <tr><td>OS</td><td>Ubuntu 26.04 LTS</td></tr>
+      <tr><td>วันที่ Build</td><td>2026-07-09</td></tr>
+      <tr><td>PostgreSQL</td><td>16.9</td></tr>
+      <tr><td>Redis</td><td>7.4-alpine</td></tr>
+      <tr><td>Nginx</td><td>1.27-alpine</td></tr>
+      <tr><td>Docker</td><td>29.6.1</td></tr>
+      <tr><td>Docker Compose</td><td>v5.3.1</td></tr>
+    </table>
+  </footer>
+
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  var sections = document.querySelectorAll('.section');
+  var navLinks = document.querySelectorAll('.nav-link');
+  var navList = document.querySelector('.nav-list');
+  var searchInput = document.querySelector('.search');
+  var prevBtn = document.querySelector('.btn-prev');
+  var nextBtn = document.querySelector('.btn-next');
+  var indicator = document.querySelector('.nav-indicator');
+
+  var sectionIds = Array.from(sections).map(function(s) { return s.id; });
+  var currentIndex = 0;
+
+  function showSection(id) {
+    sections.forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id);
+    if (!target) return;
+    target.classList.add('active');
+
+    navLinks.forEach(function(link) {
+      var href = link.getAttribute('href');
+      link.classList.toggle('active', href === '#' + id);
+    });
+
+    currentIndex = sectionIds.indexOf(id);
+    if (currentIndex < 0) currentIndex = 0;
+    updateNavButtons();
+
+    if (history.pushState) {
+      history.pushState(null, '', '#' + id);
+    }
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function updateNavButtons() {
+    prevBtn.disabled = (currentIndex <= 0);
+    nextBtn.disabled = (currentIndex >= sectionIds.length - 1);
+    indicator.textContent = (currentIndex + 1) + ' / ' + sectionIds.length;
+  }
+
+  function goPrev() {
+    if (currentIndex > 0) showSection(sectionIds[currentIndex - 1]);
+  }
+
+  function goNext() {
+    if (currentIndex < sectionIds.length - 1) showSection(sectionIds[currentIndex + 1]);
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var id = link.getAttribute('href').slice(1);
+      showSection(id);
+    });
+  });
+
+  prevBtn.addEventListener('click', goPrev);
+  nextBtn.addEventListener('click', goNext);
+
+  document.querySelectorAll('.goto-link').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var targetId = link.getAttribute('data-target');
+      if (targetId) showSection(targetId);
+    });
+  });
+
+  window.addEventListener('popstate', function() {
+    var hash = window.location.hash.slice(1);
+    if (hash && sectionIds.indexOf(hash) >= 0) {
+      showSection(hash);
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrev(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goNext(); }
+  });
+
+  searchInput.addEventListener('input', function() {
+    var q = searchInput.value.toLowerCase();
+    var items = navList.querySelectorAll('li');
+    items.forEach(function(li) {
+      var text = li.textContent.toLowerCase();
+      li.style.display = text.indexOf(q) >= 0 ? '' : 'none';
+    });
+  });
+
+  var hash = window.location.hash.slice(1);
+  if (hash && sectionIds.indexOf(hash) >= 0) {
+    showSection(hash);
+  } else {
+    updateNavButtons();
+  }
+
+})();
+</script>
+
+</body>
+</html>

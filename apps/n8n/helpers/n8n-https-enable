@@ -1,0 +1,64 @@
+#!/bin/bash
+# n8n-https-enable — enable HTTPS for n8n
+# Prerequisites: cert files at /opt/n8n/certs/fullchain.pem + privkey.pem
+# Actions:
+#   1. Verify certs present
+#   2. Update .env (N8N_PROTOCOL, N8N_SECURE_COOKIE, N8N_PROXY_HOPS, WEBHOOK_URL)
+#   3. Activate HTTPS nginx config (port 80 → 443 redirect)
+#   4. Restart stack
+set -e
+
+WORK_DIR="/opt/n8n"
+ENV_FILE="${WORK_DIR}/.env"
+CERT_FULLCHAIN="${WORK_DIR}/certs/fullchain.pem"
+CERT_PRIVKEY="${WORK_DIR}/certs/privkey.pem"
+
+# ── Check certs ──
+if [ ! -f "${CERT_FULLCHAIN}" ] || [ ! -f "${CERT_PRIVKEY}" ]; then
+  echo "ERROR: SSL certificates not found."
+  echo "  Expected: ${CERT_FULLCHAIN}"
+  echo "  Expected: ${CERT_PRIVKEY}"
+  echo ""
+  echo "Place your cert files at the paths above, then run n8n-https-enable again."
+  exit 1
+fi
+
+# ── Check .env ──
+if [ ! -f "${ENV_FILE}" ]; then
+  echo "ERROR: .env not found at ${ENV_FILE}"
+  echo "Run n8n-bootstrap first (or reboot the VM) to generate .env"
+  exit 1
+fi
+
+# ── Get domain from .env or prompt ──
+CURRENT_HOST=$(grep -oP '(?<=N8N_HOST=)[^\s]+' "${ENV_FILE}" 2>/dev/null || echo "")
+
+echo "=> Enabling HTTPS for n8n"
+echo "   Current N8N_HOST: ${CURRENT_HOST}"
+echo ""
+read -r -p "Enter your domain name (e.g., n8n.example.com): " DOMAIN
+if [ -z "${DOMAIN}" ]; then
+  echo "ERROR: Domain name is required."
+  exit 1
+fi
+
+echo "=> Updating .env for HTTPS..."
+sed -i "s|N8N_HOST=.*|N8N_HOST=${DOMAIN}|" "${ENV_FILE}"
+sed -i "s|N8N_PROTOCOL=.*|N8N_PROTOCOL=https|" "${ENV_FILE}"
+sed -i "s|WEBHOOK_URL=.*|WEBHOOK_URL=https://${DOMAIN}/|" "${ENV_FILE}"
+sed -i "s|N8N_SECURE_COOKIE=.*|N8N_SECURE_COOKIE=true|" "${ENV_FILE}"
+sed -i "s|N8N_PROXY_HOPS=.*|N8N_PROXY_HOPS=1|" "${ENV_FILE}"
+
+echo "=> Activating HTTPS nginx config (port 80 → 443 redirect)..."
+cp "${WORK_DIR}/nginx/n8n-https.conf" "${WORK_DIR}/nginx/n8n.conf"
+
+echo "=> Restarting n8n stack..."
+cd "${WORK_DIR}"
+docker compose down
+docker compose up -d
+
+echo ""
+echo "=> HTTPS enabled successfully!"
+echo "   Access URL: https://${DOMAIN}/"
+echo "   Port 80 redirects to 443."
+echo "   N8N_SECURE_COOKIE=true, N8N_PROXY_HOPS=1"

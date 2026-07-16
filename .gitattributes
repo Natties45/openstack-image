@@ -1,0 +1,8 @@
+*.sh text eol=lf
+build/apps/*/scripts/* text eol=lf
+build/apps/*/*-bootstrap text eol=lf
+build/apps/*/*-bootstrap.sh text eol=lf
+build/apps/*/*-backup.sh text eol=lf
+build/apps/*/*-tune-workers.sh text eol=lf
+build/apps/*/99-* text eol=lf
+build/apps/*/*-bootstrap.service text eol=lf

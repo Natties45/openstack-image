@@ -1,0 +1,18 @@
+#!/bin/sh
+cat << 'EOF'
+
+Dify CE Image
+--------------
+Setup: http://<VM-IP>/install
+
+Read docs:
+  cat /root/README-dify-image.txt
+
+Read credentials (INIT_PASSWORD):
+  cat /root/dify-credentials.txt
+
+Manage stack:
+  docker compose -f /opt/dify/docker-compose.yml --env-file /opt/dify/.env ps
+  docker compose -f /opt/dify/docker-compose.yml --env-file /opt/dify/.env logs -f
+
+EOF
